@@ -1,0 +1,7 @@
+data/CRISPRGeneDependency.csv
+data/OmicsExpressionTPMLogp1HumanProteinCodingGenesStranded.csv
+data/OmicsExpressionTPMLogp1HumanProteinCodingGenesStranded.zip
+data/OmicsSomaticMutationsMAF.maf
+.Rhistory
+.RData
+.Rproj.user/
