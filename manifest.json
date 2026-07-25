@@ -37,6 +37,39 @@
         "Built": "R 4.6.1; ; 2026-06-27 16:05:50 UTC; unix"
       }
     },
+    "Matrix": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "Matrix",
+        "Version": "1.7-5",
+        "VersionNote": "do also bump src/version.h, inst/include/Matrix/version.h",
+        "Date": "2026-03-20",
+        "Priority": "recommended",
+        "Title": "Sparse and Dense Matrix Classes and Methods",
+        "Description": "A rich hierarchy of sparse and dense matrix classes,\n\tincluding general, symmetric, triangular, and diagonal matrices\n\twith numeric, logical, or pattern entries.  Efficient methods for\n\toperating on such matrices, often wrapping the 'BLAS', 'LAPACK',\n\tand 'SuiteSparse' libraries.",
+        "License": "GPL (>= 2) | file LICENCE",
+        "URL": "https://Matrix.R-forge.R-project.org",
+        "BugReports": "https://R-forge.R-project.org/tracker/?atid=294&group_id=61",
+        "Contact": "Matrix-authors@R-project.org",
+        "Authors@R": "\n\tc(person(\"Douglas\", \"Bates\", role = \"aut\",\n\t         comment = c(ORCID = \"0000-0001-8316-9503\")),\n\t  person(\"Martin\", \"Maechler\", role = c(\"aut\", \"cre\"),\n\t         email = \"mmaechler+Matrix@gmail.com\",\n\t         comment = c(ORCID = \"0000-0002-8685-9910\")),\n\t  person(\"Mikael\", \"Jagan\", role = \"aut\",\n\t         comment = c(ORCID = \"0000-0002-3542-2938\")),\n\t  person(\"Timothy A.\", \"Davis\", role = \"ctb\",\n\t         comment = c(ORCID = \"0000-0001-7614-6899\",\n\t                     \"SuiteSparse libraries\",\n\t                     \"collaborators listed in dir(system.file(\\\"doc\\\", \\\"SuiteSparse\\\", package=\\\"Matrix\\\"), pattern=\\\"License\\\", full.names=TRUE, recursive=TRUE)\")),\n\t  person(\"George\", \"Karypis\", role = \"ctb\",\n\t         comment = c(ORCID = \"0000-0003-2753-1437\",\n\t                     \"METIS library\",\n\t                     \"Copyright: Regents of the University of Minnesota\")),\n\t  person(\"Jason\", \"Riedy\", role = \"ctb\",\n\t         comment = c(ORCID = \"0000-0002-4345-4200\",\n\t                     \"GNU Octave's condest() and onenormest()\",\n\t                     \"Copyright: Regents of the University of California\")),\n\t  person(\"Jens\", \"Oehlschlägel\", role = \"ctb\",\n\t         comment = \"initial nearPD()\"),\n\t  person(\"R Core Team\", role = \"ctb\",\n\t         comment = c(ROR = \"02zz1nj61\", \"base R's matrix implementation\")))",
+        "Depends": "R (>= 4.4), methods",
+        "Imports": "grDevices, graphics, grid, lattice, stats, utils",
+        "Suggests": "MASS, datasets, sfsmisc, tools",
+        "Enhances": "SparseM, graph",
+        "LazyData": "no",
+        "LazyDataNote": "not possible, since we use data/*.R and our S4 classes",
+        "BuildResaveData": "no",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-03-20 19:40:14 UTC; maechler",
+        "Author": "Douglas Bates [aut] (ORCID: <https://orcid.org/0000-0001-8316-9503>),\n  Martin Maechler [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-8685-9910>),\n  Mikael Jagan [aut] (ORCID: <https://orcid.org/0000-0002-3542-2938>),\n  Timothy A. Davis [ctb] (ORCID: <https://orcid.org/0000-0001-7614-6899>,\n    SuiteSparse libraries, collaborators listed in\n    dir(system.file(\"doc\", \"SuiteSparse\", package=\"Matrix\"),\n    pattern=\"License\", full.names=TRUE, recursive=TRUE)),\n  George Karypis [ctb] (ORCID: <https://orcid.org/0000-0003-2753-1437>,\n    METIS library, Copyright: Regents of the University of Minnesota),\n  Jason Riedy [ctb] (ORCID: <https://orcid.org/0000-0002-4345-4200>, GNU\n    Octave's condest() and onenormest(), Copyright: Regents of the\n    University of California),\n  Jens Oehlschlägel [ctb] (initial nearPD()),\n  R Core Team [ctb] (ROR: <https://ror.org/02zz1nj61>, base R's matrix\n    implementation)",
+        "Maintainer": "Martin Maechler <mmaechler+Matrix@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-03-21 14:40:03 UTC",
+        "Built": "R 4.5.3; x86_64-pc-linux-gnu; 'Wed, 08 Apr 2026 00:59:51 +0000'; unix"
+      }
+    },
     "R6": {
       "Source": "CRAN",
       "Repository": "https://cloud.r-project.org",
@@ -292,6 +325,36 @@
         "Built": "R 4.6.1; x86_64-pc-linux-gnu; 2026-06-27 11:12:09 UTC; unix"
       }
     },
+    "callr": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "callr",
+        "Title": "Call R from R",
+        "Version": "3.8.0",
+        "Authors@R": "c(\n    person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\", \"cph\"),\n           comment = c(ORCID = \"0000-0001-7098-9676\")),\n    person(\"Winston\", \"Chang\", role = \"aut\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"),\n           comment = c(ROR = \"03wc8by49\")),\n    person(\"Ascent Digital Services\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "It is sometimes useful to perform a computation in a separate\n    R process, without affecting the current R process at all.  This\n    packages does exactly that.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://callr.r-lib.org, https://github.com/r-lib/callr",
+        "BugReports": "https://github.com/r-lib/callr/issues",
+        "Depends": "R (>= 3.4)",
+        "Imports": "otel (>= 0.2.0), processx (>= 3.6.1), R6, utils",
+        "Suggests": "asciicast (>= 2.3.1), carrier, cli (>= 1.1.0), otelsdk (>=\n0.2.0), ps, rprojroot, spelling, testthat (>= 3.2.0), withr (>=\n2.3.0)",
+        "Config/Needs/website": "r-lib/asciicast, glue, htmlwidgets, igraph,\ntibble, tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Config/usethis/last-upkeep": "2025-04-28",
+        "Encoding": "UTF-8",
+        "Language": "en-US",
+        "Config/roxygen2/version": "8.0.0",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-06-05 08:20:00 UTC; gaborcsardi",
+        "Author": "Gábor Csárdi [aut, cre, cph] (ORCID:\n    <https://orcid.org/0000-0001-7098-9676>),\n  Winston Chang [aut],\n  Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>),\n  Ascent Digital Services [cph, fnd]",
+        "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-06-05 11:40:13 UTC",
+        "Built": "R 4.6.1; ; 2026-06-27 13:36:14 UTC; unix"
+      }
+    },
     "cli": {
       "Source": "CRAN",
       "Repository": "https://cloud.r-project.org",
@@ -376,6 +439,35 @@
         "Built": "R 4.6.1; x86_64-pc-linux-gnu; 2026-06-27 10:17:07 UTC; unix"
       }
     },
+    "coro": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "coro",
+        "Title": "'Coroutines' for R",
+        "Version": "1.1.0",
+        "Authors@R": "c(\n    person(\"Lionel\", \"Henry\", , \"lionel@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Provides 'coroutines' for R, a family of functions that can\n    be suspended and resumed later on. This includes 'async' functions\n    (which await) and generators (which yield). 'Async' functions are\n    based on the concurrency framework of the 'promises' package.\n    Generators are based on a dependency free iteration protocol defined\n    in 'coro' and are compatible with iterators from the 'reticulate'\n    package.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/r-lib/coro, https://coro.r-lib.org/",
+        "BugReports": "https://github.com/r-lib/coro/issues",
+        "Depends": "R (>= 3.5.0)",
+        "Imports": "rlang (>= 0.4.12)",
+        "Suggests": "knitr, later (>= 1.1.0), magrittr (>= 2.0.0), promises,\nreticulate, rmarkdown, testthat (>= 3.0.0)",
+        "VignetteBuilder": "knitr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2024-11-05 09:54:43 UTC; lionel",
+        "Author": "Lionel Henry [aut, cre],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "Lionel Henry <lionel@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-11-05 10:30:09 UTC",
+        "Built": "R 4.6.1; ; 2026-06-27 11:09:46 UTC; unix"
+      }
+    },
     "cpp11": {
       "Source": "CRAN",
       "Repository": "https://cloud.r-project.org",
@@ -457,6 +549,36 @@
         "Repository": "CRAN",
         "Date/Publication": "2025-08-26 23:50:02 UTC",
         "Built": "R 4.6.1; ; 2026-06-27 13:36:36 UTC; unix"
+      }
+    },
+    "desc": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "desc",
+        "Title": "Manipulate DESCRIPTION Files",
+        "Version": "1.4.3",
+        "Authors@R": "c(\n    person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Kirill\", \"Müller\", role = \"aut\"),\n    person(\"Jim\", \"Hester\", , \"james.f.hester@gmail.com\", role = \"aut\"),\n    person(\"Maëlle\", \"Salmon\", role = \"ctb\",\n           comment = c(ORCID = \"0000-0002-2815-0399\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+        "Description": "Tools to read, write, create, and manipulate DESCRIPTION\n    files.  It is intended for packages that create or manipulate other\n    packages.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://desc.r-lib.org/, https://github.com/r-lib/desc",
+        "BugReports": "https://github.com/r-lib/desc/issues",
+        "Depends": "R (>= 3.4)",
+        "Imports": "cli, R6, utils",
+        "Suggests": "callr, covr, gh, spelling, testthat, whoami, withr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "Language": "en-US",
+        "RoxygenNote": "7.2.3",
+        "Collate": "'assertions.R' 'authors-at-r.R' 'built.R' 'classes.R'\n'collate.R' 'constants.R' 'deps.R' 'desc-package.R'\n'description.R' 'encoding.R' 'find-package-root.R' 'latex.R'\n'non-oo-api.R' 'package-archives.R' 'read.R' 'remotes.R'\n'str.R' 'syntax_checks.R' 'urls.R' 'utils.R' 'validate.R'\n'version.R'",
+        "NeedsCompilation": "no",
+        "Packaged": "2023-12-10 11:07:50 UTC; gaborcsardi",
+        "Author": "Gábor Csárdi [aut, cre],\n  Kirill Müller [aut],\n  Jim Hester [aut],\n  Maëlle Salmon [ctb] (<https://orcid.org/0000-0002-2815-0399>),\n  Posit Software, PBC [cph, fnd]",
+        "Repository": "CRAN",
+        "Date/Publication": "2023-12-10 11:40:08 UTC",
+        "Built": "R 4.6.1; ; 2026-06-27 11:15:53 UTC; unix"
       }
     },
     "digest": {
@@ -948,6 +1070,51 @@
         "Built": "R 4.6.1; x86_64-pc-linux-gnu; 2026-06-27 15:56:09 UTC; unix"
       }
     },
+    "igraph": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "igraph",
+        "Title": "Network Analysis and Visualization",
+        "Version": "2.3.3",
+        "Authors@R": "c(\n    person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = \"aut\",\n           comment = c(ORCID = \"0000-0001-7098-9676\")),\n    person(\"Tamás\", \"Nepusz\", , \"ntamas@gmail.com\", role = \"aut\",\n           comment = c(ORCID = \"0000-0002-1451-338X\")),\n    person(\"Vincent\", \"Traag\", role = \"aut\",\n           comment = c(ORCID = \"0000-0003-3170-3879\")),\n    person(\"Szabolcs\", \"Horvát\", , \"szhorvat@gmail.com\", role = \"aut\",\n           comment = c(ORCID = \"0000-0002-3100-523X\")),\n    person(\"Fabio\", \"Zanini\", , \"fabio.zanini@unsw.edu.au\", role = \"aut\",\n           comment = c(ORCID = \"0000-0001-7097-8539\")),\n    person(\"Daniel\", \"Noom\", role = \"aut\"),\n    person(\"Kirill\", \"Müller\", , \"kirill@cynkra.com\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0002-1416-3412\")),\n    person(\"Michael\", \"Antonov\", role = \"ctb\"),\n    person(\"Chan Zuckerberg Initiative\", role = \"fnd\",\n           comment = c(ROR = \"02qenvm24\")),\n    person(\"David\", \"Schoch\", , \"david.schoch@cynkra.com\", role = \"aut\",\n           comment = c(ORCID = \"0000-0003-2952-4812\")),\n    person(\"Maëlle\", \"Salmon\", , \"maelle@cynkra.com\", role = \"aut\",\n           comment = c(ORCID = \"0000-0002-2815-0399\")),\n    person(\"R Consortium\", role = \"fnd\",\n           comment = c(ROR = \"01z833950\"))\n  )",
+        "Description": "Routines for simple graphs and network analysis. It can\n    handle large graphs very well and provides functions for generating\n    random and regular graphs, graph visualization, centrality methods and\n    much more.",
+        "License": "GPL (>= 2)",
+        "URL": "https://r.igraph.org/, https://igraph.org/,\nhttps://igraph.discourse.group/",
+        "BugReports": "https://github.com/igraph/rigraph/issues",
+        "Depends": "methods, R (>= 3.5.0)",
+        "Imports": "cli, graphics, grDevices, lifecycle, magrittr, Matrix,\npkgconfig (>= 2.0.0), rlang (>= 1.1.0), stats, utils, vctrs",
+        "Suggests": "ape (>= 5.7-0.1), callr, decor, digest, igraphdata, knitr,\nrgl (>= 1.3.14), rmarkdown, scales, stats4, tcltk, testthat,\nvdiffr, withr",
+        "Enhances": "graph",
+        "LinkingTo": "cpp11 (>= 0.5.0)",
+        "VignetteBuilder": "knitr",
+        "Config/build/compilation-database": "false",
+        "Config/build/never-clean": "true",
+        "Config/comment/compilation-database": "Generate manually with\npkgload:::generate_db() for faster pkgload::load_all()",
+        "Config/Needs/build": "devtools, irlba, pkgconfig",
+        "Config/Needs/coverage": "covr",
+        "Config/Needs/roxygen2": "r-lib/roxygen2, igraph/igraph.r2cdocs,\nmoodymudskipper/devtag",
+        "Config/Needs/website": "here, readr, tibble, xmlparsedata, xml2",
+        "Config/testthat/edition": "3",
+        "Config/testthat/parallel": "true",
+        "Config/testthat/start-first": "aaa-auto, vs-es, scan, vs-operators,\nweakref, watts.strogatz.game",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3.9000",
+        "SystemRequirements": "libxml2 (optional), glpk (>= 4.57, optional)",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-06-25 18:44:21 UTC; kirill",
+        "Author": "Gábor Csárdi [aut] (ORCID: <https://orcid.org/0000-0001-7098-9676>),\n  Tamás Nepusz [aut] (ORCID: <https://orcid.org/0000-0002-1451-338X>),\n  Vincent Traag [aut] (ORCID: <https://orcid.org/0000-0003-3170-3879>),\n  Szabolcs Horvát [aut] (ORCID: <https://orcid.org/0000-0002-3100-523X>),\n  Fabio Zanini [aut] (ORCID: <https://orcid.org/0000-0001-7097-8539>),\n  Daniel Noom [aut],\n  Kirill Müller [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-1416-3412>),\n  Michael Antonov [ctb],\n  Chan Zuckerberg Initiative [fnd] (ROR: <https://ror.org/02qenvm24>),\n  David Schoch [aut] (ORCID: <https://orcid.org/0000-0003-2952-4812>),\n  Maëlle Salmon [aut] (ORCID: <https://orcid.org/0000-0002-2815-0399>),\n  R Consortium [fnd] (ROR: <https://ror.org/01z833950>)",
+        "Maintainer": "Kirill Müller <kirill@cynkra.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-06-26 11:50:02 UTC",
+        "Built": "R 4.6.1; x86_64-pc-linux-gnu; 2026-07-25 18:08:11 UTC; unix",
+        "RemoteType": "standard",
+        "RemotePkgRef": "igraph",
+        "RemoteRef": "igraph",
+        "RemoteRepos": "https://cloud.r-project.org",
+        "RemoteSha": "2.3.3"
+      }
+    },
     "isoband": {
       "Source": "CRAN",
       "Repository": "https://cloud.r-project.org",
@@ -1112,6 +1279,35 @@
         "Repository": "CRAN",
         "Date/Publication": "2026-03-05 07:50:02 UTC",
         "Built": "R 4.6.1; x86_64-pc-linux-gnu; 2026-06-27 11:24:08 UTC; unix"
+      }
+    },
+    "lattice": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "lattice",
+        "Version": "0.22-9",
+        "Date": "2026-02-03",
+        "Priority": "recommended",
+        "Title": "Trellis Graphics for R",
+        "Authors@R": "c(person(\"Deepayan\", \"Sarkar\", role = c(\"aut\", \"cre\"),\n\t            email = \"deepayan.sarkar@r-project.org\",\n\t\t    comment = c(ORCID = \"0000-0003-4107-1553\")),\n              person(\"Felix\", \"Andrews\", role = \"ctb\"),\n\t      person(\"Kevin\", \"Wright\", role = \"ctb\", comment = \"documentation\"),\n\t      person(\"Neil\", \"Klepeis\", role = \"ctb\"),\n\t      person(\"Johan\", \"Larsson\", role = \"ctb\", comment = \"miscellaneous improvements\"),\n              person(\"Zhijian (Jason)\", \"Wen\", role = \"cph\", comment = \"filled contour code\"),\n              person(\"Paul\", \"Murrell\", role = \"ctb\", email = \"paul@stat.auckland.ac.nz\"),\n\t      person(\"Stefan\", \"Eng\", role = \"ctb\", comment = \"violin plot improvements\"),\n\t      person(\"Achim\", \"Zeileis\", role = \"ctb\", comment = \"modern colors\"),\n              person(\"Alexandre\", \"Courtiol\", role = \"ctb\", comment = \"generics for larrows, lpolygon, lrect and lsegments\")\n\t      )",
+        "Description": "A powerful and elegant high-level data visualization\n  system inspired by Trellis graphics, with an emphasis on\n  multivariate data. Lattice is sufficient for typical graphics needs,\n  and is also flexible enough to handle most nonstandard requirements.\n  See ?Lattice for an introduction.",
+        "Depends": "R (>= 4.0.0)",
+        "Suggests": "KernSmooth, MASS, latticeExtra, colorspace",
+        "Imports": "grid, grDevices, graphics, stats, utils",
+        "Enhances": "chron, zoo",
+        "LazyLoad": "yes",
+        "LazyData": "yes",
+        "License": "GPL (>= 2)",
+        "URL": "https://lattice.r-forge.r-project.org/",
+        "BugReports": "https://github.com/deepayan/lattice/issues",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-02-08 19:21:28 UTC; deepayan",
+        "Author": "Deepayan Sarkar [aut, cre] (ORCID:\n    <https://orcid.org/0000-0003-4107-1553>),\n  Felix Andrews [ctb],\n  Kevin Wright [ctb] (documentation),\n  Neil Klepeis [ctb],\n  Johan Larsson [ctb] (miscellaneous improvements),\n  Zhijian (Jason) Wen [cph] (filled contour code),\n  Paul Murrell [ctb],\n  Stefan Eng [ctb] (violin plot improvements),\n  Achim Zeileis [ctb] (modern colors),\n  Alexandre Courtiol [ctb] (generics for larrows, lpolygon, lrect and\n    lsegments)",
+        "Maintainer": "Deepayan Sarkar <deepayan.sarkar@r-project.org>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-02-09 06:10:13 UTC",
+        "Built": "R 4.5.2; x86_64-pc-linux-gnu; 'Thu, 26 Feb 2026 00:30:49 +0000'; unix"
       }
     },
     "lazyeval": {
@@ -1362,6 +1558,35 @@
         "Built": "R 4.6.1; ; 2026-06-27 10:33:44 UTC; unix"
       }
     },
+    "processx": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "processx",
+        "Title": "Execute and Control System Processes",
+        "Version": "3.9.0",
+        "Authors@R": "c(\n    person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\", \"cph\"),\n           comment = c(ORCID = \"0000-0001-7098-9676\")),\n    person(\"Winston\", \"Chang\", role = \"aut\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"),\n           comment = c(ROR = \"03wc8by49\")),\n    person(\"Ascent Digital Services\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Tools to run system processes in the background.  It can\n    check if a background process is running; wait on a background process\n    to finish; get the exit status of finished processes; kill background\n    processes. It can read the standard output and error of the processes,\n    using non-blocking connections. 'processx' can poll a process for\n    standard output or error, with a timeout. It can also poll several\n    processes at once.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://processx.r-lib.org, https://github.com/r-lib/processx",
+        "BugReports": "https://github.com/r-lib/processx/issues",
+        "Depends": "R (>= 3.4.0)",
+        "Imports": "ps (>= 1.9.3), R6, utils",
+        "Suggests": "callr (>= 3.7.3), cli (>= 3.3.0), codetools, covr, curl,\ndebugme, parallel, rlang (>= 1.0.2), testthat (>= 3.0.0),\nwebfakes, withr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Config/usethis/last-upkeep": "2025-04-25",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-04-22 10:56:15 UTC; gaborcsardi",
+        "Author": "Gábor Csárdi [aut, cre, cph] (ORCID:\n    <https://orcid.org/0000-0001-7098-9676>),\n  Winston Chang [aut],\n  Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>),\n  Ascent Digital Services [cph, fnd]",
+        "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-04-22 12:00:02 UTC",
+        "Built": "R 4.6.1; x86_64-pc-linux-gnu; 2026-06-27 11:29:02 UTC; unix"
+      }
+    },
     "progress": {
       "Source": "CRAN",
       "Repository": "https://cloud.r-project.org",
@@ -1425,6 +1650,36 @@
         "Repository": "CRAN",
         "Date/Publication": "2025-11-01 06:30:02 UTC",
         "Built": "R 4.6.1; ; 2026-06-27 13:43:01 UTC; unix"
+      }
+    },
+    "ps": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "ps",
+        "Title": "List, Query, Manipulate System Processes",
+        "Version": "1.9.3",
+        "Authors@R": "c(\n    person(\"Jay\", \"Loden\", role = \"aut\"),\n    person(\"Dave\", \"Daeschler\", role = \"aut\"),\n    person(\"Giampaolo\", \"Rodola'\", role = \"aut\"),\n    person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"),\n           comment = c(ROR = \"03wc8by49\"))\n  )",
+        "Description": "List, query and manipulate all system processes, on\n    'Windows', 'Linux' and 'macOS'.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/r-lib/ps, https://ps.r-lib.org/",
+        "BugReports": "https://github.com/r-lib/ps/issues",
+        "Depends": "R (>= 3.4)",
+        "Imports": "utils",
+        "Suggests": "callr, covr, curl, pillar, pingr, processx (>= 3.1.0), R6,\nrlang, testthat (>= 3.0.0), webfakes, withr",
+        "Biarch": "true",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Config/usethis/last-upkeep": "2025-04-28",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-04-20 12:53:07 UTC; gaborcsardi",
+        "Author": "Jay Loden [aut],\n  Dave Daeschler [aut],\n  Giampaolo Rodola' [aut],\n  Gábor Csárdi [aut, cre],\n  Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)",
+        "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-04-20 13:40:03 UTC",
+        "Built": "R 4.6.1; x86_64-pc-linux-gnu; 2026-06-27 10:33:56 UTC; unix"
       }
     },
     "purrr": {
@@ -1599,6 +1854,37 @@
         "RemoteRef": "rmarkdown",
         "RemoteRepos": "https://cloud.r-project.org",
         "RemoteSha": "2.31"
+      }
+    },
+    "safetensors": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "safetensors",
+        "Title": "Safetensors File Format",
+        "Version": "0.2.1",
+        "Authors@R": "c(\n    person(\"Tomasz\", \"Kalinowski\", , \"tomasz@posit.co\", role = c(\"ctb\", \"cre\")),\n    person(\"Daniel\", \"Falbel\", , \"dfalbel@gmail.com\", role = \"aut\"),\n    person(\"Sebastian\", \"Fischer\", , \"seb.fischer@tutamail.com\", role = \"ctb\"),\n    person(family = \"Posit\", role = c(\"cph\"))\n    )",
+        "Description": "A file format for storing tensors that is secure (doesn't allow for\n    code execution), fast and simple to implement. 'safetensors' also enables cross\n    language and cross frameworks compatibility making it an ideal format for\n    storing machine learning model weights.",
+        "License": "MIT + file LICENSE",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3",
+        "Suggests": "testthat (>= 3.0.0), torch (>= 0.11.0)",
+        "Config/testthat/edition": "3",
+        "Imports": "cli, jsonlite, R6, rlang",
+        "URL": "https://github.com/mlverse/safetensors,\nhttps://mlverse.github.io/safetensors/",
+        "BugReports": "https://github.com/mlverse/safetensors/issues",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-04-27 11:19:51 UTC; dfalbel",
+        "Author": "Tomasz Kalinowski [ctb, cre],\n  Daniel Falbel [aut],\n  Sebastian Fischer [ctb],\n  Posit [cph]",
+        "Maintainer": "Tomasz Kalinowski <tomasz@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-04-27 13:10:02 UTC",
+        "Built": "R 4.6.1; ; 2026-07-25 13:52:37 UTC; unix",
+        "RemoteType": "standard",
+        "RemotePkgRef": "safetensors",
+        "RemoteRef": "safetensors",
+        "RemoteRepos": "https://cloud.r-project.org",
+        "RemoteSha": "0.2.1"
       }
     },
     "sass": {
@@ -1957,6 +2243,42 @@
         "Built": "R 4.6.1; ; 2026-06-27 12:05:37 UTC; unix"
       }
     },
+    "torch": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "torch",
+        "Type": "Package",
+        "Title": "Tensors and Neural Networks with 'GPU' Acceleration",
+        "Version": "0.17.0",
+        "Authors@R": "c(\n    person(\"Tomasz\", \"Kalinowski\", role = c(\"ctb\", \"cre\"), email = \"tomasz@posit.co\"),\n    person(\"Daniel\", \"Falbel\", email = \"daniel@rstudio.com\", role = c(\"aut\", \"cph\")),\n    person(\"Javier\", \"Luraschi\", email = \"jluraschi@gmail.com\", role = c(\"aut\")),\n    person(\"Dmitriy\", \"Selivanov\", role = c(\"ctb\")),\n    person(\"Athos\", \"Damiani\", role = c(\"ctb\")),\n    person(\"Christophe\", \"Regouby\", role = c(\"ctb\")),\n    person(\"Krzysztof\", \"Joachimiak\", role = c(\"ctb\")),\n    person(\"Hamada S.\", \"Badr\", role = c(\"ctb\")),\n    person(\"Sebastian\", \"Fischer\", role = c(\"ctb\")),\n    person(\"Maximilian\", \"Pichler\", role = c(\"ctb\")),\n    person(family = \"RStudio\", role = c(\"cph\"))\n    )",
+        "Description": "Provides functionality to define and train neural networks similar to\n    'PyTorch' by Paszke et al (2019) <doi:10.48550/arXiv.1912.01703> but written entirely in R\n    using the 'libtorch' library. Also supports low-level tensor operations and\n    'GPU' acceleration.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://torch.mlverse.org/docs, https://github.com/mlverse/torch",
+        "BugReports": "https://github.com/mlverse/torch/issues",
+        "Encoding": "UTF-8",
+        "SystemRequirements": "LibTorch (https://pytorch.org/); Only x86_64\nplatforms are currently supported except for ARM system running\nmacOS.",
+        "Config/build/copy-method": "copy",
+        "LinkingTo": "Rcpp",
+        "Imports": "Rcpp, R6, withr, rlang (>= 1.0.0), methods, utils, stats,\nbit64, magrittr, tools, coro (>= 1.0.2), callr, cli (>= 3.0.0),\nglue, desc, safetensors (>= 0.1.1), jsonlite, scales",
+        "RoxygenNote": "7.3.3",
+        "Suggests": "testthat (>= 3.0.0), covr, knitr (>= 1.36), rmarkdown,\npalmerpenguins, mvtnorm, numDeriv, katex",
+        "VignetteBuilder": "knitr",
+        "Collate": "'R7.R' 'RcppExports.R' 'autocast.R' 'tensor.R' 'autograd.R'\n'backends.R' 'call_torch_function.R' 'codegen-utils.R'\n'compare.R' 'compat-purrr.R' 'compilation_unit.R'\n'conditions.R' 'contrib.R' 'creation-ops.R' 'cuda.R' 'device.R'\n'dimname_list.R' 'utils.R' 'distributions-constraints.R'\n'distributions-utils.R' 'distributions-exp-family.R'\n'distributions.R' 'distributions-bernoulli.R'\n'distributions-categorical.R' 'distributions-gamma.R'\n'distributions-chi2.R' 'distributions-mixture_same_family.R'\n'distributions-multivariate_normal.R' 'distributions-normal.R'\n'distributions-poisson.R' 'dtype.R' 'gen-method.R'\n'gen-namespace-docs.R' 'gen-namespace-examples.R'\n'gen-namespace.R' 'generator.R' 'help.R' 'utils-data.R'\n'optim.R' 'optim-adam.R' 'optim-sgd.R' 'optim-rmsprop.R'\n'optim-adagrad.R' 'optim-adamw.R' 'ignite.R' 'indexing.R'\n'install.R' 'ivalue.R' 'jit-compile.R' 'jit-execute.R'\n'jit-ops.R' 'lantern_load.R' 'lantern_sync.R' 'layout.R'\n'linalg.R' 'memory_format.R' 'nn.R' 'nn-activation.R'\n'nn-batchnorm.R' 'nn-conv.R' 'nn-distance.R' 'nn-dropout.R'\n'nn-flatten.R' 'nn-init.R' 'nn-linear.R' 'nn-loss.R'\n'nn-normalization.R' 'nn-pooling.R' 'nn-rnn.R' 'nn-sparse.R'\n'nn-transformer.R' 'nn-upsampling.R' 'nn-utils-clip-grad.R'\n'nn-utils-rnn.R' 'nn-utils-weight-norm.R' 'nn-utils.R'\n'nn_adaptive.R' 'nnf-activation.R' 'nnf-batchnorm.R'\n'nnf-conv.R' 'nnf-distance.R' 'nnf-dropout.R' 'nnf-embedding.R'\n'nnf-fold.R' 'nnf-instancenorm.R' 'nnf-linear.R' 'nnf-loss.R'\n'nnf-normalization.R' 'nnf-padding.R' 'nnf-pixelshuffle.R'\n'nnf-pooling.R' 'nnf-upsampling.R' 'nnf-vision.R' 'operators.R'\n'optim-adadelta.R' 'optim-asgd.R' 'optim-lbfgs.R'\n'optim-lr_scheduler.R' 'optim-rprop.R' 'positron.R' 'package.R'\n'qscheme.R' 'quantization.R' 'reduction.R' 'save.R' 'scalar.R'\n'script_module.R' 'stack.R' 'storage.R' 'threads.R' 'trace.R'\n'translate.R' 'type-info.R' 'utils-data-collate.R'\n'utils-data-dataloader.R' 'utils-data-enum.R'\n'utils-data-fetcher.R' 'utils-data-sampler.R' 'utils-pipe.R'\n'variable_list.R' 'with-indices.R' 'wrapers.R'",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-04-10 12:10:08 UTC; dfalbel",
+        "Author": "Tomasz Kalinowski [ctb, cre],\n  Daniel Falbel [aut, cph],\n  Javier Luraschi [aut],\n  Dmitriy Selivanov [ctb],\n  Athos Damiani [ctb],\n  Christophe Regouby [ctb],\n  Krzysztof Joachimiak [ctb],\n  Hamada S. Badr [ctb],\n  Sebastian Fischer [ctb],\n  Maximilian Pichler [ctb],\n  RStudio [cph]",
+        "Maintainer": "Tomasz Kalinowski <tomasz@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-04-11 06:20:16 UTC",
+        "Built": "R 4.6.1; x86_64-pc-linux-gnu; 2026-07-25 17:53:37 UTC; unix",
+        "RemoteType": "standard",
+        "RemotePkgRef": "torch",
+        "RemoteRef": "torch",
+        "RemoteRepos": "https://cloud.r-project.org",
+        "RemoteSha": "0.17.0"
+      }
+    },
     "tzdb": {
       "Source": "CRAN",
       "Repository": "https://cloud.r-project.org",
@@ -2232,7 +2554,22 @@
   },
   "files": {
     "app.R": {
-      "checksum": "09dac5e9f8a600cea5dfe84544ce4105"
+      "checksum": "c9ef84014aa57fe23e37fd0d78645d9b"
+    },
+    "CisplatinApp_Antiangiogenic_MultiSynergy_GNN_Updated.R": {
+      "checksum": "714beb3d7b8b0fce2445df922770e4b9"
+    },
+    "CisplatinApp_Antiangiogenic_MultiSynergy_Updated.R": {
+      "checksum": "ff07f6f9cb27e240c9d4d968063d0c37"
+    },
+    "CisplatinApp_Antiangiogenic_Updated.R": {
+      "checksum": "b1439f74dc077a373eeedf4647cffff8"
+    },
+    "CisplatinApp_Modular_GraphML/data/README.md": {
+      "checksum": "c1a7a5f28ec30f6eb0c4bf0a4a6c4b04"
+    },
+    "CisplatinApp_with_Monotherapy_Response.R": {
+      "checksum": "0336f025f8dbcd337f6e4f8c7f3e96ce"
     },
     "data/CRISPRGeneDependency.csv": {
       "checksum": "c77718247936dd31246cf6e0627e2b31"
@@ -2254,6 +2591,42 @@
     },
     "data/PortalCompounds.csv": {
       "checksum": "09e6566efdcb944265748c40e7425617"
+    },
+    "R/00_packages.R": {
+      "checksum": "67a634cc828893409cb3c21f4358dd04"
+    },
+    "R/01_data.R": {
+      "checksum": "d0b73e344e0edd62931b89402708cbed"
+    },
+    "R/02_reference_regimens.R": {
+      "checksum": "ccd324bee8151c14079e39c34c1591c0"
+    },
+    "R/03_pharmacology.R": {
+      "checksum": "1f9e994d63746de25e8535edd23e294b"
+    },
+    "R/04_compounds.R": {
+      "checksum": "be43b3651505c20a2049015b1cbf3c54"
+    },
+    "R/05_validation.R": {
+      "checksum": "b7892e17f563f4c9500d25dc7339de79"
+    },
+    "R/06_graph_ml.R": {
+      "checksum": "90539620b2d3ed718d40982b831b39ae"
+    },
+    "R/07_ui.R": {
+      "checksum": "dfad4b3e0f6910572651af00e8f7e13d"
+    },
+    "R/08_server.R": {
+      "checksum": "4bb1dd9bbf52506755a3f1af802ed0d8"
+    },
+    "README.md": {
+      "checksum": "2c28fe4afd952bfdc676502b49e43ce3"
+    },
+    "run_app.R": {
+      "checksum": "38796c961248173024a4021dcc41c60b"
+    },
+    "VEGF_compounds_screened_in_cervical_GDSC2.csv": {
+      "checksum": "701da9d405cad8ccad6178fff6d46e63"
     }
   },
   "users": null
