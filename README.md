@@ -44,3 +44,18 @@ The graph module predicts whether a candidate is stronger than the model-specifi
 - Renamed and hardened the gene-target parser as `extract_target_genes()`.
 - Removed formula-based `purrr::discard()` calls from target and graph token parsing to prevent language-object comparison errors.
 - Isolated graph-learning functions from target annotation and pharmacology functions to avoid namespace collisions.
+
+## Connect Cloud deployment
+
+Do not call `install.packages()` or `torch::install_torch()` from `app.R` or any sourced module. Connect Cloud restores packages before the worker starts, based on `manifest.json`.
+
+From the application root on your local machine, run:
+
+```r
+install.packages(c("igraph", "rsconnect"), repos = "https://cloud.r-project.org")
+source("generate_manifest.R")
+```
+
+Commit the regenerated `manifest.json` together with the application files and redeploy.
+
+`torch` is optional. If it is not present in the deployment environment, the app automatically uses graph propagation. To request the GCN engine on Connect Cloud, install `torch` locally before regenerating the manifest; successful cloud restoration still depends on the platform supporting the package and its native runtime dependencies.
