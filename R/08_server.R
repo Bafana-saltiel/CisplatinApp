@@ -107,11 +107,47 @@ server <- function(input, output, session) {
         out$graph_diagnostics <- graph_out$diagnostics
         out$graph_edges <- graph_out$edges
         out$graph_features <- graph_out$features
+
+        if (isTRUE(input$enable_validation_agent)) {
+          incProgress(0.10, detail = "Running Validation Agent and graph-model benchmarking")
+          validation_agent <- run_validation_agent(
+            graph_features = graph_out$features,
+            synergy_method = input$synergy_method,
+            edge_threshold = input$graph_edge_threshold,
+            requested_folds = input$validation_folds,
+            decision_threshold = input$validation_threshold,
+            epochs = input$gnn_epochs,
+            hidden_dim = input$gnn_hidden_dim,
+            engine = input$graph_engine
+          )
+          out$validation_predictions <- validation_agent$predictions
+          out$validation_fold_metrics <- validation_agent$fold_metrics
+          out$validation_summary <- validation_agent$summary
+          out$validation_confusion <- validation_agent$confusion
+          out$validation_roc <- validation_agent$roc
+          out$validation_decision_curve <- validation_agent$decision_curve
+          out$validation_clustering <- validation_agent$clustering
+        } else {
+          out$validation_predictions <- tibble()
+          out$validation_fold_metrics <- tibble()
+          out$validation_summary <- tibble()
+          out$validation_confusion <- tibble()
+          out$validation_roc <- tibble()
+          out$validation_decision_curve <- tibble()
+          out$validation_clustering <- tibble()
+        }
       } else {
         out$graph_ranking <- tibble()
         out$graph_diagnostics <- tibble()
         out$graph_edges <- tibble()
         out$graph_features <- tibble()
+        out$validation_predictions <- tibble()
+        out$validation_fold_metrics <- tibble()
+        out$validation_summary <- tibble()
+        out$validation_confusion <- tibble()
+        out$validation_roc <- tibble()
+        out$validation_decision_curve <- tibble()
+        out$validation_clustering <- tibble()
       }
 
       out
@@ -159,6 +195,9 @@ server <- function(input, output, session) {
       paste0("Graph learning enabled: ", isTRUE(input$enable_gnn)),
       paste0("Graph ranking rows: ", nrow(out$graph_ranking)),
       paste0("Graph engine requested: ", ifelse(isTRUE(input$enable_gnn), input$graph_engine, "not run")),
+      paste0("Validation Agent enabled: ", isTRUE(input$enable_validation_agent)),
+      paste0("Cross-validation prediction rows: ", nrow(out$validation_predictions)),
+      paste0("Validation summary rows: ", nrow(out$validation_summary)),
       paste0("R torch available: ", has_torch),
       paste0("CRISPR loaded: ", has_crispr),
       paste0("Expression loaded: ", has_expression),
@@ -189,6 +228,18 @@ server <- function(input, output, session) {
   output$graph_diagnostics_table <- renderDT({
     req(results())
     safe_dt(results()$graph_diagnostics, "No graph diagnostics available.", 25)
+  })
+  output$validation_summary_table <- renderDT({
+    req(results())
+    safe_dt(results()$validation_summary, "Enable the graph model and Validation Agent, then rerun the analysis.", 25)
+  })
+  output$validation_fold_table <- renderDT({
+    req(results())
+    safe_dt(results()$validation_fold_metrics, "No cross-validation fold metrics are available.", 25)
+  })
+  output$clustering_validation_table <- renderDT({
+    req(results())
+    safe_dt(results()$validation_clustering, "No graph-clustering validation results are available.", 25)
   })
 
   output$monotherapy_plot <- renderPlot({
@@ -370,8 +421,105 @@ server <- function(input, output, session) {
       vertex.label.cex = 0.65,
       vertex.label.dist = 0.4,
       edge.curved = 0.10,
-      main = paste0("Candidate-drug graph: ", ranking$CellLineName[[1]])
+      main = paste0(
+        "Candidate-drug graph: ", ranking$CellLineName[[1]],
+        " (", synergy_method_label(input$synergy_method), ")"
+      )
     )
+  })
+
+  output$validation_roc_plot <- renderPlot({
+    req(results())
+    plot_data <- results()$validation_roc
+    validate(need(nrow(plot_data) > 0, "No cross-validated ROC data are available."))
+
+    ggplot(plot_data, aes(x = FalsePositiveRate, y = TruePositiveRate, linetype = Benchmark)) +
+      geom_abline(intercept = 0, slope = 1, linetype = "dotted") +
+      geom_line(linewidth = 0.9) +
+      facet_wrap(~ CellLineName) +
+      coord_equal() +
+      theme_bw(base_size = 11) +
+      theme(legend.position = "bottom") +
+      labs(
+        title = "Cross-validated ROC curves for graph-model benchmarking",
+        subtitle = paste("Synergy model:", synergy_method_label(input$synergy_method)),
+        x = "False-positive rate", y = "True-positive rate", linetype = "Benchmark"
+      )
+  })
+
+  output$validation_confusion_plot <- renderPlot({
+    req(results())
+    plot_data <- results()$validation_confusion
+    validate(need(nrow(plot_data) > 0, "No cross-validated confusion-matrix data are available."))
+
+    ggplot(plot_data, aes(x = Predicted, y = Observed, fill = Count)) +
+      geom_tile() +
+      geom_text(aes(label = Count), size = 4) +
+      facet_wrap(~ Benchmark) +
+      theme_bw(base_size = 11) +
+      labs(
+        title = paste0("Cross-validated confusion matrices at threshold ", input$validation_threshold),
+        x = "Predicted class", y = "Observed class", fill = "Count"
+      )
+  })
+
+  output$decision_curve_plot <- renderPlot({
+    req(results())
+    plot_data <- results()$validation_decision_curve
+    validate(need(nrow(plot_data) > 0, "No decision-curve data are available."))
+
+    reference <- plot_data %>%
+      distinct(ModelID, CellLineName, Threshold, TreatAllNetBenefit, TreatNoneNetBenefit) %>%
+      pivot_longer(
+        cols = c(TreatAllNetBenefit, TreatNoneNetBenefit),
+        names_to = "ReferenceStrategy", values_to = "NetBenefit"
+      ) %>%
+      mutate(ReferenceStrategy = recode(
+        ReferenceStrategy,
+        TreatAllNetBenefit = "Treat all",
+        TreatNoneNetBenefit = "Treat none"
+      ))
+
+    ggplot() +
+      geom_line(
+        data = plot_data,
+        aes(x = Threshold, y = NetBenefit, linetype = Benchmark),
+        linewidth = 0.9
+      ) +
+      geom_line(
+        data = reference,
+        aes(x = Threshold, y = NetBenefit, linetype = ReferenceStrategy),
+        linewidth = 0.7
+      ) +
+      facet_wrap(~ CellLineName, scales = "free_y") +
+      theme_bw(base_size = 11) +
+      theme(legend.position = "bottom") +
+      labs(
+        title = "Decision Curve Analysis of cross-validated graph predictions",
+        subtitle = "Net benefit across clinically relevant probability thresholds",
+        x = "Decision threshold", y = "Net benefit", linetype = "Model or strategy"
+      )
+  })
+
+  output$clustering_validation_plot <- renderPlot({
+    req(results())
+    plot_data <- results()$validation_clustering %>%
+      select(CellLineName, SilhouetteScore, RandIndex, AdjustedRandIndex) %>%
+      pivot_longer(
+        cols = c(SilhouetteScore, RandIndex, AdjustedRandIndex),
+        names_to = "Metric", values_to = "Score"
+      )
+    validate(need(any(is.finite(plot_data$Score)), "No graph-clustering validation scores are available."))
+
+    ggplot(plot_data, aes(x = CellLineName, y = Score, fill = Metric)) +
+      geom_col(position = position_dodge(width = 0.8)) +
+      coord_flip() +
+      theme_bw(base_size = 11) +
+      labs(
+        title = "Graph-clustering validity and label agreement",
+        subtitle = "Silhouette score measures graph-cluster separation; Rand indices measure agreement with interaction labels",
+        x = "Cervical cancer model", y = "Validation score", fill = "Metric"
+      )
   })
 
   output$functional_plot <- renderPlot({
@@ -505,5 +653,25 @@ server <- function(input, output, session) {
   output$download_graph_diagnostics <- downloadHandler(
     filename = function() paste0(input$combo, "_GraphML_Diagnostics.csv"),
     content = function(file) write.csv(results()$graph_diagnostics, file, row.names = FALSE)
+  )
+
+  output$download_validation_summary <- downloadHandler(
+    filename = function() paste0(input$combo, "_", toupper(input$synergy_method), "_Validation_Agent_Summary.csv"),
+    content = function(file) write.csv(results()$validation_summary, file, row.names = FALSE)
+  )
+
+  output$download_validation_predictions <- downloadHandler(
+    filename = function() paste0(input$combo, "_", toupper(input$synergy_method), "_CrossValidation_Predictions.csv"),
+    content = function(file) write.csv(results()$validation_predictions, file, row.names = FALSE)
+  )
+
+  output$download_validation_folds <- downloadHandler(
+    filename = function() paste0(input$combo, "_", toupper(input$synergy_method), "_CrossValidation_Fold_Metrics.csv"),
+    content = function(file) write.csv(results()$validation_fold_metrics, file, row.names = FALSE)
+  )
+
+  output$download_decision_curve <- downloadHandler(
+    filename = function() paste0(input$combo, "_", toupper(input$synergy_method), "_Decision_Curve_Data.csv"),
+    content = function(file) write.csv(results()$validation_decision_curve, file, row.names = FALSE)
   )
 }
