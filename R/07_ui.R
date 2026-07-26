@@ -133,6 +133,35 @@ ui <- fluidPage(
 
       hr(),
 
+      checkboxInput(
+        "enable_validation_agent",
+        "Run Validation Agent for graph model",
+        value = FALSE
+      ),
+
+      conditionalPanel(
+        condition = "input.enable_validation_agent == true",
+        numericInput(
+          "validation_folds",
+          "Stratified cross-validation folds:",
+          value = 5, min = 2, max = 10, step = 1
+        ),
+        sliderInput(
+          "validation_threshold",
+          "Classification decision threshold:",
+          min = 0.10, max = 0.90, value = 0.50, step = 0.05
+        ),
+        helpText(
+          paste(
+            "The Validation Agent performs stratified node-level cross-validation",
+            "within each cervical model and benchmarks the graph model against",
+            "a pharmacology-only logistic model and a prevalence baseline."
+          )
+        )
+      ),
+
+      hr(),
+
       checkboxGroupInput(
         "doses",
         "Dose levels:",
@@ -171,7 +200,18 @@ ui <- fluidPage(
         br(), br(),
         downloadButton("download_graph_edges", "Download graph edges"),
         br(), br(),
-        downloadButton("download_graph_diagnostics", "Download graph diagnostics")
+        downloadButton("download_graph_diagnostics", "Download graph diagnostics"),
+        br(), br(),
+        conditionalPanel(
+          condition = "input.enable_validation_agent == true",
+          downloadButton("download_validation_summary", "Download validation summary"),
+          br(), br(),
+          downloadButton("download_validation_predictions", "Download CV predictions"),
+          br(), br(),
+          downloadButton("download_validation_folds", "Download fold metrics"),
+          br(), br(),
+          downloadButton("download_decision_curve", "Download decision-curve data")
+        )
       )
     ),
 
@@ -223,6 +263,33 @@ ui <- fluidPage(
         ),
 
         tabPanel(
+          "Validation Agent",
+          h4("Graph-model validation and benchmarking"),
+          p("Reports accuracy, sensitivity, specificity, ROC-AUC, F1-score, MCC, confusion matrices, decision-curve analysis, clustering validity, and stratified cross-validation."),
+          DTOutput("validation_summary_table"),
+          h4("Cross-validation metrics by cervical model and fold"),
+          DTOutput("validation_fold_table")
+        ),
+
+        tabPanel(
+          "ROC and confusion matrix",
+          plotOutput("validation_roc_plot", height = "650px"),
+          plotOutput("validation_confusion_plot", height = "650px")
+        ),
+
+        tabPanel(
+          "Decision Curve Analysis",
+          plotOutput("decision_curve_plot", height = "700px")
+        ),
+
+        tabPanel(
+          "Graph clustering validation",
+          h4("Agreement between graph-derived clusters and pharmacological interaction labels"),
+          DTOutput("clustering_validation_table"),
+          plotOutput("clustering_validation_plot", height = "650px")
+        ),
+
+        tabPanel(
           "Functional: CRISPR dependency",
           h4("Does the model require the drug target for survival?"),
           DTOutput("functional_table"),
@@ -246,4 +313,3 @@ ui <- fluidPage(
     )
   )
 )
-
