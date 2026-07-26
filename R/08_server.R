@@ -97,6 +97,7 @@ server <- function(input, output, session) {
         incProgress(0.10, detail = "Constructing drug graphs and training graph model")
         graph_out <- run_graph_learning(
           third_ranking = out$third_ranking,
+          synergy_method = input$synergy_method,
           edge_threshold = input$graph_edge_threshold,
           epochs = input$gnn_epochs,
           hidden_dim = input$gnn_hidden_dim,
@@ -506,4 +507,3 @@ server <- function(input, output, session) {
     content = function(file) write.csv(results()$graph_diagnostics, file, row.names = FALSE)
   )
 }
-
