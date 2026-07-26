@@ -9,6 +9,7 @@ module_files <- c(
   "R/04_compounds.R",
   "R/05_validation.R",
   "R/06_graph_ml.R",
+  "R/09_validation_agent.R",
   "R/07_ui.R",
   "R/08_server.R"
 )
