@@ -23,9 +23,9 @@ PortalCompounds <- readr::read_csv(required_files[["PortalCompounds"]], show_col
 Model <- readr::read_csv(required_files[["Model"]], show_col_types = FALSE)
 GDSC2ResponseCurves <- readr::read_csv(required_files[["GDSC2ResponseCurves"]], show_col_types = FALSE)
 
-CRISPR_FILE <- file.path(DATA_DIR, "CRISPRGeneDependency.csv")
-EXPRESSION_FILE <- file.path(DATA_DIR, "OmicsExpressionTPMLogp1HumanProteinCodingGenesStranded.csv")
-MUTATION_FILE <- file.path(DATA_DIR, "OmicsSomaticMutationsMAF.maf")
+CRISPR_FILE <- file.path(DATA_DIR, "CRISPRGeneDependency_Cervix.csv")
+EXPRESSION_FILE <- file.path(DATA_DIR, "OmicsExpressionTPMLogp1HumanProteinCodingGenesStranded_Cervix.csv")
+MUTATION_FILE <- file.path(DATA_DIR, "OmicsSomaticMutationsMAF_Cervix.maf")
 
 has_crispr <- file.exists(CRISPR_FILE)
 has_expression <- file.exists(EXPRESSION_FILE)
