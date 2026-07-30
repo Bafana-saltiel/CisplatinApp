@@ -143,22 +143,6 @@ ui <- fluidPage(
   numericInput("gnn_epochs","GCN training epochs:",250,50,2000,50),
   numericInput("gnn_hidden_dim","GCN hidden units:",16,4,128,4)
 ),
-          selected = "auto"
-        ),
-        sliderInput(
-          "graph_edge_threshold",
-          "Minimum graph edge weight:",
-          min = 0.05, max = 0.80, value = 0.20, step = 0.05
-        ),
-        numericInput(
-          "gnn_epochs",
-          "GCN training epochs:",
-          value = 250, min = 50, max = 2000, step = 50
-        ),
-        numericInput(
-          "gnn_hidden_dim",
-          "GCN hidden units:",
-          value = 16, min = 4, max = 128, step = 4
         ),
         helpText(
           paste0(
