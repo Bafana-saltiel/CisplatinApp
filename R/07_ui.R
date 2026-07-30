@@ -95,54 +95,60 @@ ui <- fluidPage(
         value = FALSE
       ),
 
-   conditionalPanel(
-  condition = "input.enable_gnn == true",
+      conditionalPanel(
+        condition = "input.enable_gnn == true",
 
-  selectInput(
-    "graph_engine",
-    "Graph-learning engine:",
-    choices = c(
-      "Automatic: GCN when torch is available" = "auto",
-      "Two-layer graph convolutional network (requires torch)" = "gcn",
-      "Transparent graph-propagation baseline" = "propagation"
-    ),
-    selected = "auto"
-  ),
+        selectInput(
+          "graph_engine",
+          "Graph-learning engine:",
+          choices = c(
+            "Automatic: GCN when torch is available" = "auto",
+            "Two-layer graph convolutional network (requires torch)" = "gcn",
+            "Transparent graph-propagation baseline" = "propagation"
+          ),
+          selected = "auto"
+        ),
 
-  hr(),
+        hr(),
 
-  checkboxGroupInput(
-    "graph_context",
-    "Biological evidence layers:",
-    choices = c(
-      "CRISPR dependency" = "crispr",
-      "Target expression" = "expression",
-      "Somatic mutation" = "mutation"
-    ),
-    selected = c("crispr","expression","mutation")
-  ),
+        checkboxGroupInput(
+          "graph_context",
+          "Biological evidence layers:",
+          choices = c(
+            "CRISPR dependency" = "crispr",
+            "Target expression" = "expression",
+            "Somatic mutation" = "mutation"
+          ),
+          selected = c("crispr", "expression", "mutation")
+        ),
 
-  selectInput(
-    "graph_candidate_limit",
-    "Maximum candidate drugs:",
-    choices = c(
-      "All candidates"="all",
-      "Top 100"="100",
-      "Top 250"="250",
-      "Top 500"="500"
-    ),
-    selected="all"
-  ),
+        selectInput(
+          "graph_candidate_limit",
+          "Maximum candidate drugs:",
+          choices = c(
+            "All candidates" = "all",
+            "Top 100" = "100",
+            "Top 250" = "250",
+            "Top 500" = "500"
+          ),
+          selected = "all"
+        ),
 
-  sliderInput(
-    "graph_edge_threshold",
-    "Minimum graph edge weight:",
-    min=0.05,max=0.80,value=0.20,step=0.05
-  ),
+        sliderInput(
+          "graph_edge_threshold",
+          "Minimum graph edge weight:",
+          min = 0.05, max = 0.80, value = 0.20, step = 0.05
+        ),
 
-  numericInput("gnn_epochs","GCN training epochs:",250,50,2000,50),
-  numericInput("gnn_hidden_dim","GCN hidden units:",16,4,128,4)
-),
+        numericInput(
+          "gnn_epochs",
+          "GCN training epochs:",
+          value = 250, min = 50, max = 2000, step = 50
+        ),
+        numericInput(
+          "gnn_hidden_dim",
+          "GCN hidden units:",
+          value = 16, min = 4, max = 128, step = 4
         ),
         helpText(
           paste0(
