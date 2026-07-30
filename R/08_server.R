@@ -156,13 +156,34 @@ server <- function(input, output, session) {
 
   observeEvent(results(), {
     out <- results()
+
+    if (
+      is.null(out$graph_ranking) ||
+      nrow(out$graph_ranking) == 0 ||
+      !all(c("ModelID", "CellLineName") %in% names(out$graph_ranking))
+    ) {
+      updateSelectInput(
+        session,
+        "graph_model_view",
+        choices = character(0),
+        selected = character(0)
+      )
+      return(invisible(NULL))
+    }
+
     graph_models <- out$graph_ranking %>%
       distinct(ModelID, CellLineName) %>%
       arrange(CellLineName)
+
     choices <- setNames(graph_models$ModelID, graph_models$CellLineName)
-    updateSelectInput(session, "graph_model_view", choices = choices,
-      selected = if (length(choices) > 0) unname(choices[[1]]) else NULL)
-  })
+
+    updateSelectInput(
+      session,
+      "graph_model_view",
+      choices = choices,
+      selected = unname(choices[[1]])
+    )
+  }, ignoreInit = TRUE)
 
   output$run_status <- renderText({
     if (is.null(results())) return("Click 'Run analysis' to start.")
