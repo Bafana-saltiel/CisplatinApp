@@ -37,6 +37,25 @@ scaled_numeric_similarity <- function(a, b, scale_value = 1) {
   1 / (1 + abs(a - b) / max(scale_value, 1e-8))
 }
 
+empty_graph_edges <- function() {
+  tibble(
+    from = character(),
+    to = character(),
+    weight = double(),
+    SynergyMethod = character(),
+    shared_target = double(),
+    shared_mechanism = double(),
+    selected_synergy_similarity = double(),
+    delta_reference_similarity = double(),
+    observed_response_similarity = double(),
+    expected_response_similarity = double(),
+    monotherapy_similarity = double(),
+    dependency_similarity = double(),
+    expression_similarity = double(),
+    mutation_similarity = double()
+  )
+}
+
 build_graph_feature_table <- function(third_ranking, synergy_method = NULL) {
   if (is.null(third_ranking) || nrow(third_ranking) == 0) return(tibble())
 
@@ -120,7 +139,7 @@ build_drug_graph <- function(model_tbl, edge_threshold = 0.20, synergy_method = 
   if (nrow(model_tbl) < 2) {
     return(list(
       adjacency = matrix(1, nrow(model_tbl), nrow(model_tbl)),
-      edges = tibble()
+      edges = empty_graph_edges()
     ))
   }
 
@@ -220,7 +239,12 @@ build_drug_graph <- function(model_tbl, edge_threshold = 0.20, synergy_method = 
     }
   }
 
-  edges <- if (k == 0L) tibble() else bind_rows(edge_rows[seq_len(k)])
+  edges <- if (k == 0L) {
+    empty_graph_edges()
+  } else {
+    bind_rows(edge_rows[seq_len(k)])
+  }
+
   list(adjacency = A, edges = edges)
 }
 
@@ -460,12 +484,21 @@ run_graph_learning <- function(
       FallbackReason = fit$fallback_reason %||% NA_character_
     )
 
-    edges <- graph$edges %>%
-      mutate(
-        ModelID = model_id,
-        CellLineName = dat$CellLineName[[1]],
-        .before = 1
-      )
+    edges <- if (nrow(graph$edges) == 0) {
+      graph$edges %>%
+        mutate(
+          ModelID = character(),
+          CellLineName = character(),
+          .before = 1
+        )
+    } else {
+      graph$edges %>%
+        mutate(
+          ModelID = model_id,
+          CellLineName = dat$CellLineName[[1]],
+          .before = 1
+        )
+    }
 
     list(ranking = ranked, diagnostics = diagnostics, edges = edges)
   })
