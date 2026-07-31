@@ -314,8 +314,30 @@ graph_propagation_predict <- function(A_norm, X, y) {
 
 train_gcn_model <- function(A_norm, X, y, epochs = 250, hidden_dim = 16, seed = 42) {
   if (!has_torch) stop("The optional R package 'torch' is not installed.")
-  if (length(unique(y)) < 2 || length(y) < 10) {
-    stop("Insufficient class variation for GCN training.")
+
+  y <- as.integer(y)
+  valid_y <- is.finite(y) & y %in% c(0L, 1L)
+
+  if (!all(valid_y)) {
+    stop("GCN labels must contain only finite binary values (0 or 1).")
+  }
+
+  # The anti-angiogenic screen can contain nine evaluable candidates per model
+  # even when ten compounds were initially selected. The previous minimum of
+  # ten nodes therefore rejected every model before GCN training.
+  if (length(y) < 4L) {
+    stop("At least four candidate nodes are required for GCN training.")
+  }
+
+  class_counts <- table(factor(y, levels = c(0L, 1L)))
+  if (any(class_counts == 0L)) {
+    stop(
+      paste0(
+        "GCN training requires both outcome classes; observed counts were ",
+        "not-stronger = ", class_counts[[1]],
+        " and stronger = ", class_counts[[2]], "."
+      )
+    )
   }
 
   torch <- asNamespace("torch")
@@ -477,6 +499,8 @@ run_graph_learning <- function(
       MeanEdgeWeight = if (nrow(graph$edges) > 0) mean(graph$edges$weight) else 0,
       positive_labels = sum(y == 1),
       negative_labels = sum(y == 0),
+      GCNEligible = nrow(dat) >= 4 && any(y == 0) && any(y == 1),
+      ROCEligible = any(y == 0) && any(y == 1),
       Engine = engine_used,
       EvaluationSet = ifelse(length(test_idx) > 0, "Held-out 20%", "Training/internal"),
       Accuracy = mean((eval_p >= 0.5) == eval_y),
