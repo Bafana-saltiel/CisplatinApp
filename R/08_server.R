@@ -3,6 +3,8 @@
 # ============================================================
 
 server <- function(input, output, session) {
+  cross_scc_validation_server(input, output, session)
+
   selected_combo <- reactive({
     Clinical_Cisplatin_Combinations_Final %>%
       filter(ClinicalCombination == input$combo)
