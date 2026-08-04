@@ -337,6 +337,11 @@ ui <- fluidPage(
           h4("Is dependency or synergy improvement associated with a genomic alteration?"),
           DTOutput("biomarker_table"),
           plotOutput("biomarker_plot", height = "650px")
+        ),
+
+        tabPanel(
+          "Cross-SCC Validation",
+          cross_scc_validation_ui()
         )
       )
     )
