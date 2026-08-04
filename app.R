@@ -28,15 +28,14 @@ for (module_file in module_files) {
   sys.source(module_file, envir = app_environment)
 }
 
-required_app_objects <- c(
+required_app_functions <- c(
   "cross_scc_validation_ui",
   "cross_scc_validation_server",
-  "ui",
   "server"
 )
-missing_app_objects <- required_app_objects[
+missing_app_functions <- required_app_functions[
   !vapply(
-    required_app_objects,
+    required_app_functions,
     exists,
     logical(1),
     envir = app_environment,
@@ -44,11 +43,15 @@ missing_app_objects <- required_app_objects[
     inherits = FALSE
   )
 ]
-if (length(missing_app_objects) > 0) {
+if (length(missing_app_functions) > 0) {
   stop(
     "Application modules did not define required functions: ",
-    paste(missing_app_objects, collapse = ", ")
+    paste(missing_app_functions, collapse = ", ")
   )
+}
+
+if (!exists("ui", envir = app_environment, inherits = FALSE)) {
+  stop("Application modules did not define the Shiny UI object: ui")
 }
 
 shiny::shinyApp(ui = ui, server = server)
