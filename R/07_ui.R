@@ -2,6 +2,18 @@
 # 7. SHINY UI
 # ============================================================
 
+# Defensive module loading for hosted environments. app.R normally sources
+# R/10_cohort_validation.R before this file; this guard ensures that the
+# Cross-SCC UI function is still available if the UI file is evaluated in a
+# separate environment by the deployment platform.
+if (!exists("cross_scc_validation_ui", mode = "function", inherits = TRUE)) {
+  cross_scc_module <- file.path("R", "10_cohort_validation.R")
+  if (!file.exists(cross_scc_module)) {
+    stop("Missing Cross-SCC validation module: ", cross_scc_module)
+  }
+  sys.source(cross_scc_module, envir = environment())
+}
+
 ui <- fluidPage(
   theme = shinytheme("flatly"),
   titlePanel("Cisplatin Clinical Reference Combination Explorer"),
