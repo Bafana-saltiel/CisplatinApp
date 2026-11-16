@@ -2,21 +2,23 @@
 # 10. CROSS-SCC COHORT VALIDATION MODULE
 # ============================================================
 
-CROSS_SCC_DATA_DIR <- file.path("data", "TCGA data")
+CROSS_SCC_DATA_DIR <- Sys.getenv(
+  "CROSS_SCC_DATA_DIR", unset = file.path("data", "TCGA data")
+)
 
+# RNA symbols corresponding to the candidate-pathway RPPA measurements.
+# Phosphoprotein states (e.g. SRC-pY416) require separate protein data.
 CROSS_SCC_TARGETS <- c(
-  "CDK2", "DOT1L", "TOP1", "TUBA1B", "BRD1", "PBRM1",
-  "PARP2", "ATR", "EWSR1", "BRAF", "MTOR"
+  "SYK", "GSK3B", "SRC", "ERBB2", "ERBB3", "WEE1", "JAK2", "STAT3"
 )
 
 CROSS_SCC_PROGRAMMES <- list(
-  "Multi-target DDR-epigenetic-mTOR" = c("ATR", "PARP2", "DOT1L", "MTOR"),
-  "DNA damage and replication" = c("ATR", "PARP2", "TOP1"),
-  "Chromatin and transcription" = c("DOT1L", "BRD1", "PBRM1", "EWSR1"),
-  "Cell cycle" = "CDK2",
-  "Microtubule organisation" = "TUBA1B",
-  "MAPK signalling" = "BRAF",
-  "mTOR signalling" = "MTOR"
+  "SYK signalling" = "SYK",
+  "GSK-3 beta signalling" = "GSK3B",
+  "Src signalling" = "SRC",
+  "HER/ErbB signalling" = c("ERBB2", "ERBB3"),
+  "WEE1 checkpoint" = "WEE1",
+  "JAK-STAT signalling" = c("JAK2", "STAT3")
 )
 
 cross_scc_required_files <- function() {
@@ -66,7 +68,11 @@ cross_scc_validate_expression <- function(expression_data, label) {
 
   missing_targets <- setdiff(CROSS_SCC_TARGETS, expression_data$GeneSymbol)
   if (length(missing_targets) > 0) {
-    stop(label, " is missing targets: ", paste(missing_targets, collapse = ", "))
+    stop(
+      label, " is missing target RNA genes: ",
+      paste(missing_targets, collapse = ", "),
+      ". Re-export this cohort from its expression source with the requested symbols."
+    )
   }
 
   if (anyDuplicated(expression_data$GeneSymbol)) {
@@ -130,7 +136,7 @@ cross_scc_load_gse <- function() {
 
   raw_matrix <- cross_scc_make_matrix(expression_data, sample_ids, "GSE299125")
 
-  # Whole-transcriptome library sizes are unavailable in the reduced 11-gene
+  # Whole-transcriptome library sizes are unavailable in the reduced target-gene
   # file. log2(count + 1) is used only to stabilize variance before calculating
   # within-gene, within-cohort Z-scores. Absolute GSE and TCGA values are never
   # compared directly.
@@ -355,7 +361,7 @@ cross_scc_validation_ui <- function() {
           ),
           actionButton(
             "run_cross_scc",
-            "Run cross-SCC validation",
+            "Run cross-SCC RNA analysis",
             class = "btn-success",
             icon = icon("play")
           ),
@@ -368,10 +374,10 @@ cross_scc_validation_ui <- function() {
         wellPanel(
           h4("Interpretation"),
           p(
-            "The fixed 11-target panel is derived from cervical model-specific pharmacology and CRISPR dependency. GSE299125 provides independent cervical patient-level molecular validation; TCGA-CESC tests within-disease replication; and TCGA-HNSC, TCGA-LUSC and TCGA-ESCA-SCC test cross-squamous conservation."
+            "The panel examines RNA expression for eight genes corresponding to signalling proteins investigated in cervical SCC. GSE299125 and TCGA-CESC provide cervical tumour data. TCGA-HNSC, TCGA-LUSC and TCGA-ESCA provide cross-cohort comparisons."
           ),
           p(
-            "GSE299125 raw counts and TCGA log2(FPKM-UQ + 1) values are not compared directly. Each target is standardized within its cohort, so results represent relative patient states rather than absolute cross-platform abundance or predicted clinical response."
+            "Each gene is standardised within its cohort. Scores describe relative RNA expression. Protein abundance, phosphorylation, kinase activity and drug sensitivity require separate measurements."
           ),
           uiOutput("cross_scc_status")
         )
@@ -394,7 +400,7 @@ cross_scc_validation_ui <- function() {
         DTOutput("cross_scc_prevalence_table")
       ),
       tabPanel(
-        "Vulnerability programmes",
+        "RNA programme scores",
         plotOutput("cross_scc_programme_plot", height = "800px")
       ),
       tabPanel(
@@ -440,7 +446,7 @@ cross_scc_validation_server <- function(input, output, session) {
     if (input$run_cross_scc == 0) {
       return(tags$div(
         class = "alert alert-info",
-        "All 10 expression/metadata files were detected. Click Run cross-SCC validation."
+        "All 10 expression/metadata files were detected. Click Run cross-SCC RNA analysis."
       ))
     }
 
@@ -494,7 +500,7 @@ cross_scc_validation_server <- function(input, output, session) {
         x = NULL,
         y = paste0("Proportion with Z-score >= ", input$cross_scc_high_threshold),
         fill = "Cohort",
-        title = "Prevalence of comparatively elevated therapeutic-vulnerability targets"
+        title = "Prevalence of elevated target RNA expression"
       ) +
       theme_bw(base_size = 12) +
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -547,7 +553,7 @@ cross_scc_validation_server <- function(input, output, session) {
       labs(
         x = NULL,
         y = "Mean within-cohort target Z-score",
-        title = "Model-derived vulnerability-programme scores"
+        title = "Target RNA programme scores"
       ) +
       theme_bw(base_size = 11) +
       theme(
@@ -615,7 +621,7 @@ cross_scc_validation_server <- function(input, output, session) {
       labs(
         x = sprintf("PC1 (%.1f%%)", pca$variance[1]),
         y = sprintf("PC2 (%.1f%%)", pca$variance[2]),
-        title = "Cross-SCC relative vulnerability-state space"
+        title = "Cross-SCC target RNA expression space"
       ) +
       theme_bw(base_size = 12)
   })
@@ -643,7 +649,7 @@ cross_scc_validation_server <- function(input, output, session) {
       "Patient target states" = analysis_data()$z_long %>%
         filter(Cohort == input$cross_scc_cohort),
       "Target-high prevalence" = target_prevalence(),
-      "Vulnerability programmes" = programme_scores(),
+      "RNA programme scores" = programme_scores(),
       "Projected states" = state_projection()$assignments,
       "Cross-SCC PCA" = pca_results()$scores,
       "Network preservation" = network_results(),
@@ -655,11 +661,10 @@ cross_scc_validation_server <- function(input, output, session) {
     filename = function() {
       tab_name <- input$cross_scc_results_tab %||% "Cohort inclusion"
       safe_name <- str_replace_all(str_to_lower(tab_name), "[^a-z0-9]+", "_")
-      paste0("Cross_SCC_", safe_name, ".csv")
+      paste0("Cross_SCC_Kinase_RNA_", safe_name, ".csv")
     },
     content = function(file) {
       readr::write_csv(displayed_download(), file, na = "")
     }
   )
 }
-
