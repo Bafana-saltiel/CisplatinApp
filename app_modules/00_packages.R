@@ -13,7 +13,7 @@ missing_packages <- required_packages[
 ]
 
 if (length(missing_packages) > 0) {
-  install.packages(missing_packages, dependencies = TRUE)
+  stop("Install required packages before starting: ", paste(missing_packages, collapse = ", "))
 }
 
 suppressPackageStartupMessages({
@@ -31,8 +31,4 @@ suppressPackageStartupMessages({
   library(scales)
 })
 
-# torch is optional because its installation is large and platform-specific.
-has_torch <- requireNamespace("torch", quietly = TRUE)
-
 `%||%` <- function(x, y) if (is.null(x)) y else x
-

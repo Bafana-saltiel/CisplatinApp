@@ -1,0 +1,14 @@
+{
+  "apiVersion": "2.0.5",
+  "dataTimestamp": "2026-11-19T10:00:07",
+  "retrieved": "2026-11-20",
+  "query_url": "https://clinicaltrials.gov/api/v2/studies?query.cond=Cervical+Cancer&query.intr=Cisplatin&pageSize=1000&countTotal=true",
+  "filters": "No API study filter. Local selection of INTERVENTIONAL records with cervical disease terms and all regimen drug aliases in the same arm's Drug intervention names. An explicitly single-group study without arm labels uses its study-level interventions.",
+  "curated_exclusions": {
+    "NCT06535607": "Cervical cancer appears only in the monotherapy sub-study.",
+    "NCT01405235": "Registered arm label and listed drugs conflict."
+  },
+  "returned_studies": 1708,
+  "matched_arms": 98,
+  "output_sha256": "3dcf1f3fc82a7d56f7226c515857c7636bb955e29c1a2d16db52a90537ca7e09"
+}

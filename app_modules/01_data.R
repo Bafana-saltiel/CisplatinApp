@@ -3,6 +3,7 @@
 # ============================================================
 
 DATA_DIR <- "data"
+Trial_Arm_Matches <- readr::read_csv(file.path(DATA_DIR, "clinical-trial-arm-matches.csv"), show_col_types = FALSE)
 
 required_files <- list(
   PortalCompounds = file.path(DATA_DIR, "PortalCompounds.csv"),
@@ -20,7 +21,8 @@ if (length(missing_required) > 0) {
 }
 
 PortalCompounds <- readr::read_csv(required_files[["PortalCompounds"]], show_col_types = FALSE)
-Model <- readr::read_csv(required_files[["Model"]], show_col_types = FALSE)
+Model <- readr::read_csv(required_files[["Model"]], show_col_types = FALSE,
+                         col_types = readr::cols(.default = "c"))
 GDSC2ResponseCurves <- readr::read_csv(required_files[["GDSC2ResponseCurves"]], show_col_types = FALSE)
 
 CRISPR_FILE <- file.path(DATA_DIR, "CRISPRGeneDependency_Cervix.csv")

@@ -1,18 +1,16 @@
 # Cisplatin Clinical Reference Combination Explorer
-# Modular version with pharmacology, multi-synergy, validation, and graph ML.
+# Measured monotherapy and Bliss independence expectations.
 
 module_files <- c(
-  "R/00_packages.R",
-  "R/01_data.R",
-  "R/02_reference_regimens.R",
-  "R/03_pharmacology.R",
-  "R/04_compounds.R",
-  "R/05_validation.R",
-  "R/06_graph_ml.R",
-  "R/09_validation_agent.R",
-  "R/10_cohort_validation.R",
-  "R/07_ui.R",
-  "R/08_server.R"
+  "app_modules/00_packages.R",
+  "app_modules/01_data.R",
+  "app_modules/02_reference_regimens.R",
+  "app_modules/03_pharmacology.R",
+  "app_modules/04_compounds.R",
+  "app_modules/05_validation.R",
+  "app_modules/10_cohort_validation.R",
+  "app_modules/07_ui.R",
+  "app_modules/08_server.R"
 )
 
 missing_modules <- module_files[!file.exists(module_files)]

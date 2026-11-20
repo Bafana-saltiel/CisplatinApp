@@ -2553,29 +2553,50 @@
     }
   },
   "files": {
+    "README.md": {
+      "checksum": "4548e87f4f82c3777e86bc7f1ce0d1e0"
+    },
+    "VEGF_compounds_screened_in_cervical_GDSC2.csv": {
+      "checksum": "701da9d405cad8ccad6178fff6d46e63"
+    },
     "app.R": {
-      "checksum": "c9ef84014aa57fe23e37fd0d78645d9b"
+      "checksum": "55b4f11ac745628a8d2737f78e7f5a02"
     },
-    "CisplatinApp_Antiangiogenic_MultiSynergy_GNN_Updated.R": {
-      "checksum": "714beb3d7b8b0fce2445df922770e4b9"
+    "app_modules/00_packages.R": {
+      "checksum": "66db2b85a97b6e197d529692739add5a"
     },
-    "CisplatinApp_Antiangiogenic_MultiSynergy_Updated.R": {
-      "checksum": "ff07f6f9cb27e240c9d4d968063d0c37"
+    "app_modules/01_data.R": {
+      "checksum": "835d029590a7fa2004f1289d04413dff"
     },
-    "CisplatinApp_Antiangiogenic_Updated.R": {
-      "checksum": "b1439f74dc077a373eeedf4647cffff8"
+    "app_modules/02_reference_regimens.R": {
+      "checksum": "87a179b6faccd6639c064181eb57acdc"
     },
-    "CisplatinApp_Modular_GraphML/data/README.md": {
-      "checksum": "c1a7a5f28ec30f6eb0c4bf0a4a6c4b04"
+    "app_modules/03_pharmacology.R": {
+      "checksum": "9eac8b63bfbaf622dabca30e3e2b1b51"
     },
-    "CisplatinApp_with_Monotherapy_Response.R": {
-      "checksum": "0336f025f8dbcd337f6e4f8c7f3e96ce"
+    "app_modules/04_compounds.R": {
+      "checksum": "be43b3651505c20a2049015b1cbf3c54"
     },
-    "data/CRISPRGeneDependency.csv": {
-      "checksum": "c77718247936dd31246cf6e0627e2b31"
+    "app_modules/05_validation.R": {
+      "checksum": "f7b3e280a8a4a510b6882d517d7e44aa"
     },
-    "data/ctg-studies.csv": {
-      "checksum": "5097ed7eb83cd1cc06f7fee3e117b220"
+    "app_modules/07_ui.R": {
+      "checksum": "dae077f85511801e28d9a20c7a4db744"
+    },
+    "app_modules/08_server.R": {
+      "checksum": "8f266ed24e9878b22bc8924236d9ae61"
+    },
+    "app_modules/10_cohort_validation.R": {
+      "checksum": "7d52ea7eab75a5fb5257114c41572202"
+    },
+    "data/CRISPRGeneDependency_Cervix.csv": {
+      "checksum": "8cc7341a4ce272840bd09eb707ae6c76"
+    },
+    "data/GDSC2MeasuredViability_Cervix.csv": {
+      "checksum": "d01e04269e3776c09f4e5db6a22752e5"
+    },
+    "data/GDSC2MonotherapyFitAudit_Cervix.csv": {
+      "checksum": "59ff3c1b7b0b9ba2e605ad2bcbf8742f"
     },
     "data/GDSC2ResponseCurves.csv": {
       "checksum": "b294ef10b2de993b68df0ed27d74280f"
@@ -2583,50 +2604,47 @@
     "data/Model.csv": {
       "checksum": "a15d75dffcc5219111ca39598948df9a"
     },
-    "data/OmicsExpressionTPMLogp1HumanProteinCodingGenesStranded.csv": {
-      "checksum": "08ad8fcfb9602b46aa338145d27c2dd1"
+    "data/OmicsExpressionTPMLogp1HumanProteinCodingGenesStranded_Cervix.csv": {
+      "checksum": "e48de48664ed8dd32708ca5583fb60e1"
     },
-    "data/OmicsSomaticMutationsMAF.maf": {
-      "checksum": "dc742d7ebba9edfde8b5768fcb5a4bc0"
+    "data/OmicsSomaticMutationsMAF_Cervix.maf": {
+      "checksum": "40bbe6a6fff37939dae70dac0003a121"
     },
     "data/PortalCompounds.csv": {
       "checksum": "09e6566efdcb944265748c40e7425617"
     },
-    "R/00_packages.R": {
-      "checksum": "67a634cc828893409cb3c21f4358dd04"
+    "data/clinical-trial-arm-matches.csv": {
+      "checksum": "83ea830becf354090a4497f241c3d18d"
     },
-    "R/01_data.R": {
-      "checksum": "d0b73e344e0edd62931b89402708cbed"
+    "data/clinical-trial-query.json": {
+      "checksum": "1875298da665a35f6d3eb08753435db4"
     },
-    "R/02_reference_regimens.R": {
-      "checksum": "ccd324bee8151c14079e39c34c1591c0"
+    "data/ctg-studies.csv": {
+      "checksum": "5097ed7eb83cd1cc06f7fee3e117b220"
     },
-    "R/03_pharmacology.R": {
-      "checksum": "1f9e994d63746de25e8535edd23e294b"
+    "data/input-provenance.csv": {
+      "checksum": "cd5deeceba4c725ae613f3b142bfee72"
     },
-    "R/04_compounds.R": {
-      "checksum": "be43b3651505c20a2049015b1cbf3c54"
-    },
-    "R/05_validation.R": {
-      "checksum": "b7892e17f563f4c9500d25dc7339de79"
-    },
-    "R/06_graph_ml.R": {
-      "checksum": "90539620b2d3ed718d40982b831b39ae"
-    },
-    "R/07_ui.R": {
-      "checksum": "dfad4b3e0f6910572651af00e8f7e13d"
-    },
-    "R/08_server.R": {
-      "checksum": "4bb1dd9bbf52506755a3f1af802ed0d8"
-    },
-    "README.md": {
-      "checksum": "2c28fe4afd952bfdc676502b49e43ce3"
+    "data/sanger-fit-audit-summary.json": {
+      "checksum": "24f70346a6e59911e566afb7f2c4d96e"
     },
     "run_app.R": {
-      "checksum": "38796c961248173024a4021dcc41c60b"
+      "checksum": "76248d7b8904744112ff086bcfcff587"
     },
-    "VEGF_compounds_screened_in_cervical_GDSC2.csv": {
-      "checksum": "701da9d405cad8ccad6178fff6d46e63"
+    "scripts/plot_manuscript.py": {
+      "checksum": "cbd3001c64047cf86b83542c39a7b027"
+    },
+    "scripts/prepare_sanger_viability.py": {
+      "checksum": "897ce30a8afdd537d167c140c1eb6b12"
+    },
+    "scripts/refresh_trial_evidence.py": {
+      "checksum": "8c04c5ce039579378fab622d11f3fe0a"
+    },
+    "scripts/reproduce_screen.R": {
+      "checksum": "856e20e3caf830ae49bd6246406cd139"
+    },
+    "scripts/test_measured_screen.R": {
+      "checksum": "1ee49696038b4d405aa81b2817f2f8ed"
     }
   },
   "users": null

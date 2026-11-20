@@ -1,0 +1,25 @@
+{
+  "matched_doses": 26696,
+  "models": 14,
+  "model_compound_pairs": 3521,
+  "measurement_rows": 26696,
+  "matched_wells": 34375,
+  "durations_days": [
+    4
+  ],
+  "assays": [
+    "Glo"
+  ],
+  "OriginalFit": {
+    "mae": 0.3329606879063938,
+    "rmse": 0.4614499004921027,
+    "bias": -0.20583769623768783
+  },
+  "SlopeReorientedFit": {
+    "mae": 0.05764762900588291,
+    "rmse": 0.08081577692477464,
+    "bias": -0.03086324337252688
+  },
+  "source": "https://ftp.sanger.ac.uk/pub/project/cancerrxgene/releases/release-8.4/GDSC2_public_raw_data_24Jul22.csv",
+  "raw_sha256": "e915be2948b174982a9b64bea5fab00f6ec8c15f7baa76bc7e2f7a7df295500e"
+}

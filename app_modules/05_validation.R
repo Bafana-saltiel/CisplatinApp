@@ -142,7 +142,7 @@ get_target_mutation <- function(model_id, target_gene) {
 
   if (nrow(hits) == 0) {
     return(tibble(
-      MutationStatus = "Wild-type/no recorded mutation",
+      MutationStatus = "No recorded mutation",
       MutationCount = 0L,
       VariantClassification = NA_character_,
       ProteinChange = NA_character_
