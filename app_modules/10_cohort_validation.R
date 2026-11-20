@@ -6,31 +6,40 @@ CROSS_SCC_DATA_DIR <- Sys.getenv(
   "CROSS_SCC_DATA_DIR", unset = file.path("data", "TCGA data")
 )
 
-# RNA symbols corresponding to the candidate-pathway RPPA measurements.
-# Phosphoprotein states (e.g. SRC-pY416) require separate protein data.
-CROSS_SCC_TARGETS <- c(
-  "SYK", "GSK3B", "SRC", "ERBB2", "ERBB3", "WEE1", "JAK2", "STAT3"
+CROSS_SCC_REACTOME_FILE <- file.path("data", "ReactomePathways_v98.gmt")
+CROSS_SCC_PROGRAMME_IDS <- c(
+  "Proliferation (cell cycle)" = "R-HSA-1640170",
+  "Survival signalling (PI3K–AKT)" = "R-HSA-198203",
+  "Programmed cell death" = "R-HSA-5357801",
+  "DNA repair" = "R-HSA-73894",
+  "DNA replication" = "R-HSA-69306",
+  "Immune system" = "R-HSA-168256",
+  "Metabolism" = "R-HSA-1430728",
+  "Cellular stress responses" = "R-HSA-2262752",
+  "Receptor tyrosine kinase signalling" = "R-HSA-9006934",
+  "VEGF signalling" = "R-HSA-194138",
+  "Extracellular matrix organisation" = "R-HSA-1474244"
 )
 
-CROSS_SCC_PROGRAMMES <- list(
-  "SYK signalling" = "SYK",
-  "GSK-3 beta signalling" = "GSK3B",
-  "Src signalling" = "SRC",
-  "HER/ErbB signalling" = c("ERBB2", "ERBB3"),
-  "WEE1 checkpoint" = "WEE1",
-  "JAK-STAT signalling" = c("JAK2", "STAT3")
-)
+cross_scc_pathways <- function() {
+  fields <- strsplit(readLines(CROSS_SCC_REACTOME_FILE, warn = FALSE), "\t", fixed = TRUE)
+  ids <- vapply(fields, function(x) x[[2]], character(1))
+  list(
+    names = setNames(vapply(fields, function(x) x[[1]], character(1)), ids),
+    genes = setNames(lapply(fields, function(x) unique(x[-c(1L, 2L)])), ids)
+  )
+}
 
 cross_scc_required_files <- function() {
   projects <- c("CESC", "HNSC", "LUSC", "ESCA")
   c(
-    file.path(CROSS_SCC_DATA_DIR, "GSE299125_expression_matrix.csv"),
+    file.path(CROSS_SCC_DATA_DIR, "GSE299125_candidate_expression.csv"),
     file.path(CROSS_SCC_DATA_DIR, "GSE299125_sample_metadata.csv"),
     unlist(lapply(projects, function(project) {
       file.path(
         CROSS_SCC_DATA_DIR,
         c(
-          paste0("TCGA_", project, "_expression_matrix.csv"),
+          paste0("TCGA_", project, "_candidate_expression.csv"),
           paste0("TCGA_", project, "_sample_metadata.csv")
         )
       )
@@ -59,31 +68,6 @@ cross_scc_is_scc <- function(primary_diagnosis, morphology) {
   diagnosis_flag | morphology_flag
 }
 
-cross_scc_validate_expression <- function(expression_data, label) {
-  required_columns <- c("GeneSymbol", "EnsemblGeneID")
-  missing_columns <- setdiff(required_columns, names(expression_data))
-  if (length(missing_columns) > 0) {
-    stop(label, " is missing columns: ", paste(missing_columns, collapse = ", "))
-  }
-
-  missing_targets <- setdiff(CROSS_SCC_TARGETS, expression_data$GeneSymbol)
-  if (length(missing_targets) > 0) {
-    stop(
-      label, " is missing target RNA genes: ",
-      paste(missing_targets, collapse = ", "),
-      ". Re-export this cohort from its expression source with the requested symbols."
-    )
-  }
-
-  if (anyDuplicated(expression_data$GeneSymbol)) {
-    stop(label, " contains duplicated gene symbols.")
-  }
-
-  expression_data %>%
-    filter(GeneSymbol %in% CROSS_SCC_TARGETS) %>%
-    arrange(match(GeneSymbol, CROSS_SCC_TARGETS))
-}
-
 cross_scc_make_matrix <- function(expression_data, sample_ids, label) {
   absent_samples <- setdiff(sample_ids, names(expression_data))
   if (length(absent_samples) > 0) {
@@ -102,11 +86,11 @@ cross_scc_make_matrix <- function(expression_data, sample_ids, label) {
   matrix_data
 }
 
-cross_scc_load_gse <- function() {
+cross_scc_load_gse <- function(genes) {
   expression_data <- readr::read_csv(
-    file.path(CROSS_SCC_DATA_DIR, "GSE299125_expression_matrix.csv"),
+    file.path(CROSS_SCC_DATA_DIR, "GSE299125_candidate_expression.csv"),
     show_col_types = FALSE
-  ) %>% cross_scc_validate_expression("GSE299125 expression")
+  ) %>% slice(match(genes, GeneSymbol))
 
   metadata <- readr::read_csv(
     file.path(CROSS_SCC_DATA_DIR, "GSE299125_sample_metadata.csv"),
@@ -119,7 +103,7 @@ cross_scc_load_gse <- function() {
     stop("GSE299125 metadata is missing: ", paste(missing_metadata, collapse = ", "))
   }
 
-  sample_ids <- setdiff(names(expression_data), c("GeneSymbol", "EnsemblGeneID"))
+  sample_ids <- setdiff(names(expression_data), "GeneSymbol")
   metadata <- metadata %>%
     filter(PatientID %in% sample_ids) %>%
     slice(match(sample_ids, PatientID)) %>%
@@ -136,10 +120,7 @@ cross_scc_load_gse <- function() {
 
   raw_matrix <- cross_scc_make_matrix(expression_data, sample_ids, "GSE299125")
 
-  # Whole-transcriptome library sizes are unavailable in the reduced target-gene
-  # file. log2(count + 1) is used only to stabilize variance before calculating
-  # within-gene, within-cohort Z-scores. Absolute GSE and TCGA values are never
-  # compared directly.
+  # The candidate expression matrix contains CPM values.
   transformed <- log2(raw_matrix + 1)
   invasive_ids <- metadata$PatientID[metadata$IncludePrimaryAnalysis]
   invasive_matrix <- transformed[, invasive_ids, drop = FALSE]
@@ -156,12 +137,12 @@ cross_scc_load_gse <- function() {
   )
 }
 
-cross_scc_load_tcga <- function(project) {
+cross_scc_load_tcga <- function(project, genes) {
   cohort <- paste0("TCGA-", project)
   expression_data <- readr::read_csv(
-    file.path(CROSS_SCC_DATA_DIR, paste0("TCGA_", project, "_expression_matrix.csv")),
+    file.path(CROSS_SCC_DATA_DIR, paste0("TCGA_", project, "_candidate_expression.csv")),
     show_col_types = FALSE
-  ) %>% cross_scc_validate_expression(paste0(cohort, " expression"))
+  ) %>% slice(match(genes, GeneSymbol))
 
   metadata <- readr::read_csv(
     file.path(CROSS_SCC_DATA_DIR, paste0("TCGA_", project, "_sample_metadata.csv")),
@@ -177,7 +158,7 @@ cross_scc_load_tcga <- function(project) {
     stop(cohort, " metadata is missing: ", paste(missing_metadata, collapse = ", "))
   }
 
-  sample_ids <- setdiff(names(expression_data), c("GeneSymbol", "EnsemblGeneID"))
+  sample_ids <- setdiff(names(expression_data), "GeneSymbol")
   metadata <- metadata %>%
     filter(PatientID %in% sample_ids) %>%
     slice(match(sample_ids, PatientID)) %>%
@@ -212,16 +193,27 @@ cross_scc_load_tcga <- function(project) {
   )
 }
 
-cross_scc_load_all <- function() {
+cross_scc_load_all <- function(genes, pathways, pathway) {
   missing_files <- cross_scc_required_files()[!file.exists(cross_scc_required_files())]
   if (length(missing_files) > 0) {
     stop("Missing cross-SCC files: ", paste(missing_files, collapse = ", "))
   }
 
+  expression_files <- grep("_candidate_expression[.]csv$", cross_scc_required_files(), value = TRUE)
+  common_genes <- Reduce(intersect, lapply(expression_files, function(path) {
+    readr::read_csv(path, col_select = "GeneSymbol", show_col_types = FALSE)$GeneSymbol
+  }))
+  matched <- intersect(genes, common_genes)
+  validate(need(length(matched) > 0L, "None of these pathway targets have RNA data in all five cohorts."))
+  programmes <- lapply(CROSS_SCC_PROGRAMME_IDS, function(id) intersect(matched, pathways$genes[[id]]))
+  programmes <- programmes[lengths(programmes) > 0L]
+  selected_name <- if (pathway == "all") "All screened targets" else unname(pathways$names[[pathway]])
+  programmes <- c(setNames(list(matched), paste("Selected panel —", selected_name)), programmes)
+
   cohorts <- c(
-    list(GSE299125 = cross_scc_load_gse()),
+    list(GSE299125 = cross_scc_load_gse(matched)),
     setNames(
-      lapply(c("CESC", "HNSC", "LUSC", "ESCA"), cross_scc_load_tcga),
+      lapply(c("CESC", "HNSC", "LUSC", "ESCA"), cross_scc_load_tcga, genes = matched),
       paste0("TCGA-", c("CESC", "HNSC", "LUSC", "ESCA"))
     )
   )
@@ -240,13 +232,15 @@ cross_scc_load_all <- function() {
       count(Cohort, HistologyGroup, IncludePrimaryAnalysis, name = "N")
   })) %>% arrange(Cohort, desc(IncludePrimaryAnalysis), HistologyGroup)
 
-  list(cohorts = cohorts, z_long = z_long, metadata = metadata, audit = audit)
+  list(cohorts = cohorts, z_long = z_long, metadata = metadata, audit = audit,
+       genes = matched, omitted = setdiff(genes, matched), programmes = programmes,
+       pathway = pathway, pathway_name = selected_name)
 }
 
 cross_scc_programme_scores <- function(analysis_data) {
   purrr::imap_dfr(analysis_data$cohorts, function(cohort_data, cohort_name) {
-    purrr::map_dfr(names(CROSS_SCC_PROGRAMMES), function(programme_name) {
-      genes <- CROSS_SCC_PROGRAMMES[[programme_name]]
+    purrr::map_dfr(names(analysis_data$programmes), function(programme_name) {
+      genes <- analysis_data$programmes[[programme_name]]
       tibble(
         Cohort = cohort_name,
         PatientID = colnames(cohort_data$z),
@@ -263,9 +257,9 @@ cross_scc_state_projection <- function(analysis_data, k) {
   tree <- hclust(dist(patient_matrix), method = "ward.D2")
   discovery_state <- cutree(tree, k = k)
 
-  centroids <- sapply(sort(unique(discovery_state)), function(state) {
+  centroids <- do.call(cbind, lapply(sort(unique(discovery_state)), function(state) {
     rowMeans(gse_z[, discovery_state == state, drop = FALSE])
-  })
+  }))
   colnames(centroids) <- paste0("State ", sort(unique(discovery_state)))
 
   discovery <- tibble(
@@ -312,7 +306,8 @@ cross_scc_network_preservation <- function(analysis_data) {
   }
 
   correlation_matrices <- lapply(analysis_data$cohorts, function(x) {
-    cor(t(x$z), method = "spearman", use = "pairwise.complete.obs")
+    if (nrow(x$z) < 2L) return(matrix(NA_real_, 1L, 1L))
+    suppressWarnings(cor(t(x$z), method = "spearman", use = "pairwise.complete.obs"))
   })
   reference_edges <- upper_values(correlation_matrices$GSE299125)
 
@@ -320,16 +315,18 @@ cross_scc_network_preservation <- function(analysis_data) {
     correlation_matrices[names(correlation_matrices) != "GSE299125"],
     function(validation_matrix, cohort_name) {
       validation_edges <- upper_values(validation_matrix)
-      test <- suppressWarnings(cor.test(
-        reference_edges, validation_edges,
-        method = "spearman", exact = FALSE
-      ))
+      usable <- is.finite(reference_edges) & is.finite(validation_edges)
+      x <- reference_edges[usable]
+      y <- validation_edges[usable]
+      test <- if (length(x) >= 3L && n_distinct(x) > 1L && n_distinct(y) > 1L) {
+        suppressWarnings(cor.test(x, y, method = "spearman", exact = FALSE))
+      }
       tibble(
         Reference = "GSE299125 invasive cervical carcinoma",
         ValidationCohort = cohort_name,
-        TargetPairs = length(reference_edges),
-        NetworkConcordance = unname(test$estimate),
-        PValue = test$p.value
+        TargetPairs = sum(usable),
+        NetworkConcordance = if (is.null(test)) NA_real_ else unname(test$estimate),
+        PValue = if (is.null(test)) NA_real_ else test$p.value
       )
     }
   ) %>% mutate(FDR = p.adjust(PValue, method = "BH"))
@@ -342,6 +339,9 @@ cross_scc_validation_ui <- function() {
         width = 4,
         wellPanel(
           h4("Analysis controls"),
+          selectizeInput("cross_scc_pathway", "Reactome pathway",
+            choices = c("All screened targets" = "all")),
+          p("Calculate expectations to populate pathways from the current target context. Then choose a pathway and run the RNA analysis."),
           selectInput(
             "cross_scc_cohort",
             "Cohort displayed in the patient heatmap:",
@@ -374,7 +374,7 @@ cross_scc_validation_ui <- function() {
         wellPanel(
           h4("Interpretation"),
           p(
-            "The panel examines RNA expression for eight genes corresponding to signalling proteins investigated in cervical SCC. GSE299125 and TCGA-CESC provide cervical tumour data. TCGA-HNSC, TCGA-LUSC and TCGA-ESCA provide cross-cohort comparisons."
+            "The panel uses genes from the current ranked candidate targets that belong to the selected Reactome pathway and have RNA measurements across all five cohorts. GSE299125 and TCGA-CESC provide cervical tumour data. TCGA-HNSC, TCGA-LUSC and TCGA-ESCA provide cross-cohort comparisons."
           ),
           p(
             "Each gene is standardised within its cohort. Scores describe relative RNA expression. Protein abundance, phosphorylation, kinase activity and drug sensitivity require separate measurements."
@@ -414,7 +414,7 @@ cross_scc_validation_ui <- function() {
       ),
       tabPanel(
         "Network preservation",
-        h4("Preservation of the 28 pairwise target correlations"),
+        h4("Concordance of pairwise target correlations"),
         p("Interpret cautiously because the GSE299125 invasive reference contains 13 patients."),
         DTOutput("cross_scc_network_table")
       )
@@ -422,15 +422,38 @@ cross_scc_validation_ui <- function() {
   )
 }
 
-cross_scc_validation_server <- function(input, output, session) {
+cross_scc_validation_server <- function(input, output, session, ranked_target_context) {
+  pathways <- cross_scc_pathways()
+  targets <- reactive({
+    genes <- ranked_target_context()$TargetGene
+    sort(unique(genes[!is.na(genes) & nzchar(genes)]))
+  })
+  pathway_choices <- reactive({
+    screened <- targets()
+    has_targets <- vapply(pathways$genes, function(genes) any(genes %in% screened), logical(1))
+    ids <- names(pathways$genes)[has_targets]
+    c("All screened targets" = "all",
+      setNames(ids, paste0(pathways$names[ids], " (", ids, ")")))
+  })
+  observeEvent(pathway_choices(), {
+    choices <- pathway_choices()
+    selected <- input$cross_scc_pathway
+    if (!length(selected) || !selected %in% choices) selected <- "all"
+    updateSelectizeInput(session, "cross_scc_pathway", choices = choices,
+                         selected = selected, server = TRUE)
+  })
   analysis_data <- eventReactive(input$run_cross_scc, {
     withProgress(message = "Loading and harmonizing validation cohorts...", value = 0, {
       incProgress(0.2, detail = "Checking expression and metadata files")
-      data <- cross_scc_load_all()
+      validate(need(length(targets()) > 0L, "The current screen has no annotated targets."))
+      pathway <- req(input$cross_scc_pathway)
+      genes <- if (pathway == "all") targets() else intersect(targets(), pathways$genes[[pathway]])
+      validate(need(length(genes) > 0L, "The selected pathway has no targets in the current screen."))
+      data <- cross_scc_load_all(genes, pathways, pathway)
       incProgress(0.8, detail = "Preparing cross-cohort target states")
       data
     })
-  }, ignoreInit = FALSE)
+  }, ignoreInit = TRUE)
 
   output$cross_scc_status <- renderUI({
     missing_files <- cross_scc_required_files()[!file.exists(cross_scc_required_files())]
@@ -446,7 +469,7 @@ cross_scc_validation_server <- function(input, output, session) {
     if (input$run_cross_scc == 0) {
       return(tags$div(
         class = "alert alert-info",
-        "All 10 expression/metadata files were detected. Click Run cross-SCC RNA analysis."
+        "Choose a pathway after calculating expectations, then run the RNA analysis."
       ))
     }
 
@@ -454,8 +477,13 @@ cross_scc_validation_server <- function(input, output, session) {
     counts <- vapply(data$cohorts, function(x) ncol(x$z), integer(1))
     tags$div(
       class = "alert alert-success",
-      tags$b("Validation cohorts loaded: "),
-      paste(paste(names(counts), counts, sep = " = "), collapse = "; ")
+      tags$b(data$pathway_name),
+      if (data$pathway != "all") tags$p(tags$a("Reactome pathway record",
+        href = paste0("https://reactome.org/PathwayBrowser/#/", data$pathway), target = "_blank", rel = "noopener")),
+      tags$p(paste(length(data$genes), "matched target genes:", paste(data$genes, collapse = ", "))),
+      if (length(data$omitted)) tags$p(paste(
+        "Unavailable in at least one cohort:", paste(data$omitted, collapse = ", "))),
+      paste(paste(names(counts), counts, sep = " = "), collapse = ", ")
     )
   })
 
@@ -492,7 +520,7 @@ cross_scc_validation_server <- function(input, output, session) {
 
   output$cross_scc_prevalence_plot <- renderPlot({
     target_prevalence() %>%
-      mutate(GeneSymbol = factor(GeneSymbol, levels = CROSS_SCC_TARGETS)) %>%
+      mutate(GeneSymbol = factor(GeneSymbol, levels = analysis_data()$genes)) %>%
       ggplot(aes(GeneSymbol, TargetHighProportion, fill = Cohort)) +
       geom_col(position = position_dodge(width = 0.8), width = 0.75) +
       scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
@@ -515,7 +543,7 @@ cross_scc_validation_server <- function(input, output, session) {
       rownames_to_column("GeneSymbol") %>%
       pivot_longer(-GeneSymbol, names_to = "PatientID", values_to = "ZScore") %>%
       mutate(
-        GeneSymbol = factor(GeneSymbol, levels = rev(CROSS_SCC_TARGETS)),
+        GeneSymbol = factor(GeneSymbol, levels = rev(analysis_data()$genes)),
         PatientID = factor(PatientID, levels = colnames(cohort_data$z))
       )
 
@@ -605,7 +633,10 @@ cross_scc_validation_server <- function(input, output, session) {
         rownames_to_column("PatientID") %>%
         mutate(Cohort = cohort_name, .after = PatientID)
     }))
-    fit <- prcomp(combined[, CROSS_SCC_TARGETS], center = FALSE, scale. = FALSE)
+    features <- combined[, analysis_data()$genes, drop = FALSE]
+    validate(need(ncol(features) >= 2L && qr(as.matrix(features))$rank >= 2L,
+                  "Two independent expression dimensions are needed for this PCA."))
+    fit <- prcomp(features, center = FALSE, scale. = FALSE)
     variance <- 100 * summary(fit)$importance[2, 1:2]
     # Fix the arbitrary sign of each PCA axis for reproducible plots.
     signs <- vapply(seq_len(2), function(i) {
@@ -667,10 +698,14 @@ cross_scc_validation_server <- function(input, output, session) {
     filename = function() {
       tab_name <- input$cross_scc_results_tab %||% "Cohort inclusion"
       safe_name <- str_replace_all(str_to_lower(tab_name), "[^a-z0-9]+", "_")
-      paste0("Cross_SCC_Kinase_RNA_", safe_name, ".csv")
+      paste0("Cross_SCC_Target_RNA_", safe_name, ".csv")
     },
     content = function(file) {
-      readr::write_csv(displayed_download(), file, na = "")
+      data <- analysis_data()
+      table <- displayed_download() %>%
+        mutate(ReactomePathwayID = if (data$pathway == "all") NA_character_ else data$pathway,
+               TargetPanel = data$pathway_name, .before = 1)
+      readr::write_csv(table, file, na = "")
     }
   )
 }

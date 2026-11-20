@@ -1,5 +1,4 @@
 server <- function(input, output, session) {
-  cross_scc_validation_server(input, output, session)
   measured_ids <- unique(Measured_Monotherapy$CompoundID)
   drug_choices <- Third_Drug_Choices[Third_Drug_Choices %in% measured_ids]
   updateSelectizeInput(session, "candidates", choices = drug_choices, server = TRUE)
@@ -56,6 +55,7 @@ server <- function(input, output, session) {
     build_validation_tables(ranking)$biomarker
   })
   candidate_cohort_server(input, output, session, ranked_target_context)
+  cross_scc_validation_server(input, output, session, ranked_target_context)
 
   output$top_candidates_plot <- renderPlot({
     rows <- top_candidates() %>%
