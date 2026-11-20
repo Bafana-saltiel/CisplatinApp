@@ -37,6 +37,52 @@ server <- function(input, output, session) {
     validate(need(nrow(rows), "No model has measurements for the full reference and candidate dose grid. See Dose coverage."))
     datatable(rows, rownames = FALSE)
   })
+  top_candidates <- reactive({
+    rows <- result()$ranking
+    validate(need(nrow(rows), "No eligible candidates on the selected dose grid."))
+    rows %>%
+      arrange(CellLineName, ModelID, desc(BlissExpectedIncrementPP), CompoundID) %>%
+      group_by(ModelID) %>%
+      slice_head(n = 10L) %>%
+      ungroup()
+  })
+
+  output$top_candidates_plot <- renderPlot({
+    rows <- top_candidates() %>%
+      mutate(
+        Panel = if_else(is.na(CellLineName), ModelID, CellLineName),
+        Tick = factor(rev(seq_len(n()))),
+        Comparison = if_else(BlissExpectedIncrementPP > 1e-8,
+                             "Higher expected inhibition", "No expected increase")
+      )
+    labels <- setNames(
+      if_else(is.na(rows$CompoundName), rows$CompoundID, rows$CompoundName),
+      as.character(rows$Tick)
+    )
+    reference <- distinct(rows, Panel, ReferenceBlissExpectedInhibitionPct)
+
+    ggplot(rows, aes(ExpandedBlissExpectedInhibitionPct, Tick, fill = Comparison)) +
+      geom_col(width = 0.85) +
+      geom_vline(data = reference, aes(xintercept = ReferenceBlissExpectedInhibitionPct),
+                 linetype = "dashed", linewidth = 0.55) +
+      facet_wrap(vars(Panel), ncol = 4, scales = "free_y") +
+      scale_y_discrete(labels = labels) +
+      scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 25)) +
+      scale_fill_manual(values = c("Higher expected inhibition" = "#009D46",
+                                   "No expected increase" = "#638DD5")) +
+      labs(
+        title = paste(gsub("_", " + ", rows$ReferenceRegimen[[1]]), "with candidate additions"),
+        subtitle = paste0("Dashed line shows the reference expectation for each model. Candidate grid (µM) ",
+                          gsub("|", ", ", rows$CandidateGridUM[[1]], fixed = TRUE)),
+        caption = "Bliss independence expectations calculated from measured monotherapy.",
+        x = "Bliss-expected inhibition (%)", y = "Candidate compound", fill = NULL
+      ) +
+      theme_bw(base_size = 11) +
+      theme(legend.position = "bottom", axis.text.y = element_text(size = 8))
+  }, height = function() {
+    max(360, 110 + 225 * ceiling(n_distinct(top_candidates()$ModelID) / 4))
+  })
+
   output$reference <- renderDT({
     rows <- result()$reference
     validate(need(nrow(rows), "No model has measurements for every component of this regimen."))
@@ -44,10 +90,7 @@ server <- function(input, output, session) {
   })
   output$reference_doses <- renderDT(datatable(result()$reference_doses, rownames = FALSE))
   output$target_context <- renderDT({
-    ranking <- result()$ranking %>%
-      group_by(ModelID) %>%
-      slice_head(n = 10L) %>%
-      ungroup() %>%
+    ranking <- top_candidates() %>%
       rename(ThirdDrugCompoundID = CompoundID)
     validate(need(nrow(ranking), "No ranked candidates have complete dose coverage."))
     context <- build_validation_tables(ranking)$biomarker
