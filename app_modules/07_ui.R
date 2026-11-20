@@ -45,6 +45,7 @@ ui <- fluidPage(
         tabPanel("Fit audit",
                  p("Dose-matched comparison of the original equation and a slope-reoriented diagnostic against Sanger release 8.4 measurements."),
                  DTOutput("audit_summary"), DTOutput("audit_table")),
+        tabPanel("Candidate cohort expression", candidate_cohort_ui()),
         tabPanel("Cross-SCC expression", cross_scc_validation_ui())
       )
     )

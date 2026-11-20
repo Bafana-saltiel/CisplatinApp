@@ -47,6 +47,16 @@ server <- function(input, output, session) {
       ungroup()
   })
 
+  ranked_target_context <- reactive({
+    ranking <- top_candidates() %>%
+      group_by(ModelID) %>%
+      mutate(CandidateRank = row_number()) %>%
+      ungroup() %>%
+      rename(ThirdDrugCompoundID = CompoundID)
+    build_validation_tables(ranking)$biomarker
+  })
+  candidate_cohort_server(input, output, session, ranked_target_context)
+
   output$top_candidates_plot <- renderPlot({
     rows <- top_candidates() %>%
       mutate(
@@ -90,11 +100,7 @@ server <- function(input, output, session) {
   })
   output$reference_doses <- renderDT(datatable(result()$reference_doses, rownames = FALSE))
   output$target_context <- renderDT({
-    ranking <- top_candidates() %>%
-      rename(ThirdDrugCompoundID = CompoundID)
-    validate(need(nrow(ranking), "No ranked candidates have complete dose coverage."))
-    context <- build_validation_tables(ranking)$biomarker
-    datatable(context, rownames = FALSE, options = list(scrollX = TRUE))
+    datatable(ranked_target_context(), rownames = FALSE, options = list(scrollX = TRUE))
   })
   output$trials <- renderDT({
     req(input$combo)

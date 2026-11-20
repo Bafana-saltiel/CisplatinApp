@@ -2554,13 +2554,13 @@
   },
   "files": {
     "README.md": {
-      "checksum": "4548e87f4f82c3777e86bc7f1ce0d1e0"
+      "checksum": "2d026b8669e038a54937d390429b61c6"
     },
     "VEGF_compounds_screened_in_cervical_GDSC2.csv": {
       "checksum": "701da9d405cad8ccad6178fff6d46e63"
     },
     "app.R": {
-      "checksum": "55b4f11ac745628a8d2737f78e7f5a02"
+      "checksum": "f4a9f2844c8e3c939af36fa3a240cbb2"
     },
     "app_modules/00_packages.R": {
       "checksum": "66db2b85a97b6e197d529692739add5a"
@@ -2581,10 +2581,10 @@
       "checksum": "52664e4f03cb30370d0cecf4c58a8ec0"
     },
     "app_modules/07_ui.R": {
-      "checksum": "d0008366746a3e272c2988f0fc98819f"
+      "checksum": "93214e780a8f41eed680b03aaaea9957"
     },
     "app_modules/08_server.R": {
-      "checksum": "c2f84701ca076ec9a2aa152c02c99fb6"
+      "checksum": "27549a9f51474362e1bf3182b0d1d335"
     },
     "app_modules/10_cohort_validation.R": {
       "checksum": "332b822a8b6796b7bdb49b9068da6cef"
@@ -2647,7 +2647,58 @@
       "checksum": "1ee49696038b4d405aa81b2817f2f8ed"
     },
     "data/cross-scc-expression-sources.md": {
-      "checksum": "b4d93f1f6de53159cd9cb41535a08df3"
+      "checksum": "6622493a578896a4c0c3b5b06194f4e6"
+    },
+    "app_modules/11_candidate_cohorts.R": {
+      "checksum": "dbec100a2efb7feea608f21713dbb235"
+    },
+    "scripts/prepare_candidate_cohorts.py": {
+      "checksum": "1c6fe2415408d469f48cfec3cee30120"
+    },
+    "data/TCGA data/TCGA_HNSC_sample_metadata.csv": {
+      "checksum": "7ce2e74a225203c05c03954c2a9f43e2"
+    },
+    "data/TCGA data/TCGA_CESC_sample_metadata.csv": {
+      "checksum": "3e77023f33c737eaa962bd5fba606493"
+    },
+    "data/TCGA data/TCGA_ESCA_candidate_expression.csv": {
+      "checksum": "be9db700c05a7067d624e4d628f9c5c5"
+    },
+    "data/TCGA data/TCGA_CESC_expression_matrix.csv": {
+      "checksum": "94ed2b3e1ccf5582d2cf61ded17eecb0"
+    },
+    "data/TCGA data/TCGA_CESC_candidate_expression.csv": {
+      "checksum": "8cce213e92bf28adf360717a2e997432"
+    },
+    "data/TCGA data/TCGA_ESCA_sample_metadata.csv": {
+      "checksum": "419bf6ea63a2921439b7b136989bc986"
+    },
+    "data/TCGA data/GSE299125_sample_metadata.csv": {
+      "checksum": "99cd22cfd6c8a5e1c218f6568acb4e8e"
+    },
+    "data/TCGA data/GSE299125_expression_matrix.csv": {
+      "checksum": "a4b62fa6c6f3a6d68f17ef94557585af"
+    },
+    "data/TCGA data/TCGA_HNSC_expression_matrix.csv": {
+      "checksum": "c25514886c664ba5812a64199e6a7e8b"
+    },
+    "data/TCGA data/TCGA_LUSC_candidate_expression.csv": {
+      "checksum": "7379d68e6313c19f5e330b5394ac145d"
+    },
+    "data/TCGA data/TCGA_HNSC_candidate_expression.csv": {
+      "checksum": "37aea526c5ee989022542163ebba458d"
+    },
+    "data/TCGA data/TCGA_ESCA_expression_matrix.csv": {
+      "checksum": "ae59c65c673d7f98712ae2abf821dfea"
+    },
+    "data/TCGA data/TCGA_LUSC_expression_matrix.csv": {
+      "checksum": "295bcbbc427759de86c1c9cab8889f57"
+    },
+    "data/TCGA data/TCGA_LUSC_sample_metadata.csv": {
+      "checksum": "4b32ada145b596361a245328edc9421b"
+    },
+    "data/TCGA data/GSE299125_candidate_expression.csv": {
+      "checksum": "8729a1ba2a178b379ac82e0a04dc0228"
     }
   },
   "users": null
