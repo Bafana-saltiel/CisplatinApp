@@ -46,7 +46,7 @@ get_crispr_dependency <- function(model_id, target_gene) {
     return(tibble(CRISPR_Dependency = NA_real_, DependencyClass = "Not available"))
   }
 
-  dep_value <- CRISPR_Dep %>% filter(ModelID == model_id) %>% pull(all_of(target_gene))
+  dep_value <- CRISPR_Dep[[target_gene]][which(CRISPR_Dep$ModelID == model_id)]
   dep_value <- suppressWarnings(as.numeric(dep_value))
   dep_value <- if (length(dep_value) == 0) NA_real_ else dep_value[[1]]
 
@@ -77,7 +77,7 @@ get_target_expression <- function(model_id, target_gene) {
     return(tibble(Expression_log2TPM = NA_real_, ExpressionPercentile = NA_real_, ExpressionClass = "Gene not available"))
   }
 
-  model_value <- Expression_TPM %>% filter(DepMapModelID == model_id) %>% pull(all_of(target_gene))
+  model_value <- Expression_TPM[[target_gene]][which(Expression_TPM$DepMapModelID == model_id)]
   model_value <- suppressWarnings(as.numeric(model_value))
 
   if (length(model_value) == 0) {

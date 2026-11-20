@@ -607,9 +607,15 @@ cross_scc_validation_server <- function(input, output, session) {
     }))
     fit <- prcomp(combined[, CROSS_SCC_TARGETS], center = FALSE, scale. = FALSE)
     variance <- 100 * summary(fit)$importance[2, 1:2]
+    # Fix the arbitrary sign of each PCA axis for reproducible plots.
+    signs <- vapply(seq_len(2), function(i) {
+      loading <- fit$rotation[, i]
+      sign(loading[[which.max(abs(loading))]])
+    }, numeric(1))
+    coordinates <- sweep(fit$x[, 1:2, drop = FALSE], 2, signs, `*`)
     scores <- bind_cols(
       combined[, c("PatientID", "Cohort")],
-      as.data.frame(fit$x[, 1:2, drop = FALSE])
+      as.data.frame(coordinates)
     )
     list(scores = scores, variance = variance)
   })
