@@ -20,7 +20,50 @@ candidate_cohort_ui <- function() {
   )
 }
 
-candidate_cohort_data <- function(cohort, grouping) {
+candidate_tcga_groups <- function(metadata) {
+  recorded <- function(x) {
+    value <- trimws(as.character(x))
+    value[tolower(value) %in% c("", "unknown", "not reported", "not available",
+                                "not applicable", "unavailable", "gx")] <- NA_character_
+    value
+  }
+  stage <- str_extract(recorded(metadata$TumorStage), "^Stage (IV|III|II|I)")
+  age <- suppressWarnings(as.numeric(as.character(metadata$AgeAtDiagnosisYears)))
+  list(
+    stage = case_when(
+      stage %in% c("Stage I", "Stage II") ~ "Stage I–II",
+      stage %in% c("Stage III", "Stage IV") ~ "Stage III–IV"
+    ),
+    stage_detail = stage,
+    histology = if_else(
+      is.na(recorded(metadata$PrimaryDiagnosis)) & is.na(recorded(metadata$Morphology)),
+      NA_character_,
+      if_else(cross_scc_is_scc(metadata$PrimaryDiagnosis, metadata$Morphology), "SCC", "Non-SCC")
+    ),
+    diagnosis = recorded(metadata$PrimaryDiagnosis),
+    grade = recorded(metadata$TumorGrade),
+    age = case_when(
+      !is.finite(age) | age < 0 ~ NA_character_,
+      age < 50 ~ "Under 50 years",
+      TRUE ~ "50 years or older"
+    ),
+    sex = recorded(metadata$Sex),
+    site = recorded(metadata$TissueOrOrganOfOrigin),
+    vital = recorded(metadata$VitalStatus)
+  )
+}
+
+candidate_tcga_choices <- function(metadata) {
+  groups <- candidate_tcga_groups(metadata)
+  keys <- names(groups)
+  labels <- c("Stages I–II and III–IV", "Stage I, II, III or IV", "Primary tumour histology",
+              "Histologic diagnosis", "Tumour grade", "Age at diagnosis (<50 or ≥50 years)",
+              "Recorded sex", "Anatomical site of origin", "Recorded vital status")
+  choices <- setNames(keys, labels)
+  choices[vapply(groups, function(group) n_distinct(group, na.rm = TRUE) >= 2L, logical(1))]
+}
+
+candidate_cohort_inputs <- function(cohort) {
   prefix <- gsub("-", "_", cohort, fixed = TRUE)
   expression <- read_csv(
     file.path(CROSS_SCC_DATA_DIR, paste0(prefix, "_candidate_expression.csv")),
@@ -30,7 +73,13 @@ candidate_cohort_data <- function(cohort, grouping) {
     file.path(CROSS_SCC_DATA_DIR, paste0(prefix, "_sample_metadata.csv")),
     show_col_types = FALSE
   ) %>% filter(PatientID %in% names(expression))
+  if (cohort != "GSE299125") metadata <- filter(metadata, SampleType == "Primary Tumor")
+  list(expression = expression, metadata = metadata)
+}
 
+candidate_cohort_data <- function(cohort, grouping, inputs = candidate_cohort_inputs(cohort)) {
+  metadata <- inputs$metadata
+  total_samples <- nrow(metadata)
   if (cohort == "GSE299125") {
     if (grouping == "invasive") {
       metadata <- filter(metadata, Disease_Status == "Invasive cervical carcinoma")
@@ -39,22 +88,17 @@ candidate_cohort_data <- function(cohort, grouping) {
       Integrated_Patient_Group)
     unit <- "CPM"
   } else {
-    metadata <- metadata %>% filter(SampleType == "Primary Tumor")
-    if (grouping == "histology") {
-      metadata <- metadata %>%
-        mutate(Group = if_else(cross_scc_is_scc(PrimaryDiagnosis, Morphology), "SCC", "Non-SCC"))
-    } else {
-      metadata <- metadata %>% mutate(Group = case_when(
-        str_detect(TumorStage, "^Stage (III|IV)") ~ "Stage III–IV",
-        str_detect(TumorStage, "^Stage (II|I)") ~ "Stage I–II"
-      ))
-    }
+    labels <- candidate_tcga_groups(metadata)[[grouping]]
+    validate(need(!is.null(labels), "Choose a sample grouping for this cohort."))
+    metadata$Group <- labels
     unit <- "log2(FPKM-UQ + 1)"
   }
 
   metadata <- metadata %>% filter(!is.na(Group)) %>% arrange(Group, PatientID)
-  values <- cross_scc_make_matrix(expression, metadata$PatientID, cohort)
-  list(values = values, metadata = metadata, unit = unit, cohort = cohort)
+  validate(need(nrow(metadata) > 0L, "No samples have a recorded value for this grouping."))
+  values <- cross_scc_make_matrix(inputs$expression, metadata$PatientID, cohort)
+  list(values = values, metadata = metadata, unit = unit, cohort = cohort,
+       grouping = grouping, samples_excluded = if (cohort == "GSE299125") 0L else total_samples - nrow(metadata))
 }
 
 candidate_cohort_projection <- function(target_context, cohort, strongest) {
@@ -95,26 +139,31 @@ candidate_cohort_projection <- function(target_context, cohort, strongest) {
 
   list(rows = rows, z = z, omitted = omitted, unit = cohort$unit,
        cohort = cohort$cohort, metadata = cohort$metadata, samples = order_samples,
+       samples_excluded = cohort$samples_excluded,
        summary = inner_join(rows, summary, by = "TargetGene", relationship = "many-to-many") %>%
-         mutate(Cohort = cohort$cohort, ExpressionUnit = cohort$unit))
+         mutate(Cohort = cohort$cohort, SampleGrouping = cohort$grouping, ExpressionUnit = cohort$unit))
 }
 
 candidate_cohort_server <- function(input, output, session, ranked_target_context) {
-  observeEvent(input$candidate_cohort, {
-    choices <- if (input$candidate_cohort == "GSE299125") {
+  cohort_inputs <- reactive(candidate_cohort_inputs(req(input$candidate_cohort)))
+  group_choices <- reactive({
+    if (req(input$candidate_cohort) == "GSE299125") {
       c("Invasive carcinoma by HIV status" = "invasive",
         "All cervical samples by HIV and disease status" = "all")
     } else {
-      c("Stages I–II and III–IV" = "stage", "Primary tumour histology" = "histology")
+      candidate_tcga_choices(cohort_inputs()$metadata)
     }
-    updateSelectInput(session, "candidate_cohort_groups", choices = choices)
+  })
+  observeEvent(group_choices(), {
+    choices <- group_choices()
+    selected <- input$candidate_cohort_groups
+    if (is.null(selected) || !selected %in% choices) selected <- unname(choices[1])
+    updateSelectInput(session, "candidate_cohort_groups", choices = choices, selected = selected)
   })
   cohort <- reactive({
-    req(input$candidate_cohort, input$candidate_cohort_groups)
-    grouping <- input$candidate_cohort_groups
-    if (input$candidate_cohort == "GSE299125") req(grouping %in% c("invasive", "all"))
-    else req(grouping %in% c("stage", "histology"))
-    candidate_cohort_data(input$candidate_cohort, grouping)
+    grouping <- req(input$candidate_cohort_groups)
+    req(grouping %in% group_choices())
+    candidate_cohort_data(input$candidate_cohort, grouping, cohort_inputs())
   })
   projection <- reactive({
     req(input$candidate_cohort_top >= 1, input$candidate_cohort_top <= 10)
@@ -126,7 +175,8 @@ candidate_cohort_server <- function(input, output, session, ranked_target_contex
     p <- projection()
     paste(nrow(p$rows), "model–compound–target rows,",
           n_distinct(p$rows$TargetGene), "unique genes and", length(p$samples), "samples.",
-          p$omitted, "annotations excluded for absent gene symbols or cohort expression.")
+          p$omitted, "annotations excluded for absent gene symbols or cohort expression.",
+          if (p$samples_excluded > 0L) paste(p$samples_excluded, "samples lacked this clinical annotation."))
   })
   output$candidate_cohort_heatmap <- renderPlot({
     p <- projection()
@@ -142,10 +192,17 @@ candidate_cohort_server <- function(input, output, session, ranked_target_contex
       mutate(PatientID = factor(PatientID, p$samples),
              Context = factor(Context, rev(rows$Context[order])))
     group_size <- table(p$metadata$Group)
+    group_label <- as_labeller(function(x) {
+      paste0(stringr::str_wrap(x, width = 24), " (n = ", group_size[x], ")")
+    })
+    panels <- if (length(group_size) > 4L || any(group_size < 5L)) {
+      facet_wrap(vars(Group), scales = "free_x", ncol = 4, labeller = group_label)
+    } else {
+      facet_grid(. ~ Group, scales = "free_x", space = "free_x", labeller = group_label)
+    }
     ggplot(heat, aes(PatientID, Context, fill = ZScore)) +
       geom_raster() +
-      facet_grid(. ~ Group, scales = "free_x", space = "free_x",
-                 labeller = as_labeller(function(x) paste0(x, " (n = ", group_size[x], ")"))) +
+      panels +
       scale_y_discrete(labels = labels) +
       scale_fill_gradient2(low = "#3266A0", mid = "#FFFFD7", high = "#B62225",
                            name = "Gene z-score") +
@@ -157,7 +214,12 @@ candidate_cohort_server <- function(input, output, session, ranked_target_contex
       theme(panel.grid = element_blank(), axis.text.y = element_text(size = 8),
             axis.text.x = if (length(p$samples) <= 40) element_text(angle = 90, hjust = 1)
                           else element_blank())
-  }, height = function() max(360, 120 + 17 * nrow(projection()$rows)))
+  }, height = function() {
+    p <- projection()
+    group_size <- table(p$metadata$Group)
+    panel_rows <- ceiling(length(group_size) / 4)
+    min(14000, max(360, 120 + 17 * nrow(p$rows)) * panel_rows)
+  })
   output$candidate_cohort_summary <- renderDT({
     datatable(projection()$summary %>%
       select(CellLineName, CandidateRank, CompoundName, TargetGene, CRISPR_Dependency, DependencyClass,
@@ -165,7 +227,7 @@ candidate_cohort_server <- function(input, output, session, ranked_target_contex
       rownames = FALSE, options = list(scrollX = TRUE))
   })
   output$candidate_cohort_download <- downloadHandler(
-    filename = function() paste0(input$candidate_cohort, "_candidate_expression_summary.csv"),
+    filename = function() paste0(input$candidate_cohort, "_", input$candidate_cohort_groups, "_candidate_expression_summary.csv"),
     content = function(path) write_csv(projection()$summary, path)
   )
 }
