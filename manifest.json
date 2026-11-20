@@ -2587,7 +2587,7 @@
       "checksum": "8f266ed24e9878b22bc8924236d9ae61"
     },
     "app_modules/10_cohort_validation.R": {
-      "checksum": "7d52ea7eab75a5fb5257114c41572202"
+      "checksum": "af422afdd2c6e7f2a37ddbed0f4ef376"
     },
     "data/CRISPRGeneDependency_Cervix.csv": {
       "checksum": "8cc7341a4ce272840bd09eb707ae6c76"
@@ -2623,7 +2623,7 @@
       "checksum": "5097ed7eb83cd1cc06f7fee3e117b220"
     },
     "data/input-provenance.csv": {
-      "checksum": "cd5deeceba4c725ae613f3b142bfee72"
+      "checksum": "6a02c2f65118e875403d7f9ee40fadbc"
     },
     "data/sanger-fit-audit-summary.json": {
       "checksum": "24f70346a6e59911e566afb7f2c4d96e"
@@ -2645,6 +2645,9 @@
     },
     "scripts/test_measured_screen.R": {
       "checksum": "1ee49696038b4d405aa81b2817f2f8ed"
+    },
+    "data/cross-scc-expression-sources.md": {
+      "checksum": "b4d93f1f6de53159cd9cb41535a08df3"
     }
   },
   "users": null

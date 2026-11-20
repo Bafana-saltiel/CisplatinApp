@@ -414,7 +414,7 @@ cross_scc_validation_ui <- function() {
       ),
       tabPanel(
         "Network preservation",
-        h4("Preservation of the 55 pairwise target correlations"),
+        h4("Preservation of the 28 pairwise target correlations"),
         p("Interpret cautiously because the GSE299125 invasive reference contains 13 patients."),
         DTOutput("cross_scc_network_table")
       )
@@ -430,7 +430,7 @@ cross_scc_validation_server <- function(input, output, session) {
       incProgress(0.8, detail = "Preparing cross-cohort target states")
       data
     })
-  }, ignoreInit = TRUE)
+  }, ignoreInit = FALSE)
 
   output$cross_scc_status <- renderUI({
     missing_files <- cross_scc_required_files()[!file.exists(cross_scc_required_files())]
