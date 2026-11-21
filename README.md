@@ -69,3 +69,5 @@ The experimental tab accepts a three-drug CSV in the same layout as the download
 ### Optional Trial registry assistant
 
 Select **Summarise registry evidence** to count the matched cervical cancer trial arms and review examples of additional registered interventions. The summary is calculated locally from the curated records and requires no API key.
+
+**Explain with Qwen** optionally drafts a plain-language explanation of the same registry facts using Qwen2.5-1.5B-Instruct through WebLLM in the visitor's browser. A WebGPU-compatible browser and a first-use model download are required. The model and runtime are loaded on demand from public asset hosts. Inference uses the browser and requires no API key.
