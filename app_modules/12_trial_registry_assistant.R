@@ -3,7 +3,10 @@ trial_registry_assistant_ui <- function() {
     h4("Trial registry assistant"),
     actionButton("explain_trial_regimen", "Summarise registry evidence"),
     uiOutput("trial_assistant_answer"),
-    actionButton("explain_trial_qwen", "Explain with Qwen"),
+    tags$button(id = "explain_trial_qwen", type = "button", class = "btn btn-default",
+                disabled = NA, "Explain with Qwen"),
+    tags$div(id = "trial_qwen_facts", hidden = NA,
+             `data-facts` = jsonlite::toJSON(trial_registry_facts, auto_unbox = TRUE)),
     p("Optional. Qwen downloads on first use and runs in your WebGPU browser. The registry summary above works without it."),
     tags$div(
       id = "trial_qwen_progress_panel", hidden = NA,
@@ -12,9 +15,9 @@ trial_registry_assistant_ui <- function() {
                     style = "display: block; width: 100%; max-width: 28rem; height: 1.25rem;"),
       tags$p(id = "trial_qwen_progress_label")
     ),
-    tags$p(id = "trial_qwen_status", role = "status"),
+    tags$p("Preparing the Qwen controls…", id = "trial_qwen_status", role = "status"),
     tags$p(id = "trial_qwen_answer", style = "white-space: pre-wrap;"),
-    tags$script(src = "trial-registry-qwen.js")
+    tags$script(src = "trial-registry-qwen.js?v=2", defer = NA)
   )
 }
 
@@ -50,38 +53,33 @@ summarise_registry_arms <- function(trials, regimen) {
     )
 }
 
-trial_registry_assistant_server <- function(input, output, session, trials_for_regimen) {
-  shown_regimen <- eventReactive(input$explain_trial_regimen, input$combo)
-  evidence <- reactive({
-    req(input$combo)
-    trials <- summarise_registry_arms(trials_for_regimen(), input$combo)
-    examples <- trials %>%
-      filter(nzchar(AdditionalEntries)) %>%
-      arrange(desc(Radiation | AdditionalAgents), NCTId, Arm) %>%
-      distinct(NCTId, .keep_all = TRUE) %>%
-      slice_head(n = 4L)
-    list(
-      regimen = gsub("_", " + ", input$combo, fixed = TRUE),
-      arms = nrow(trials), studies = n_distinct(trials$NCTId),
-      radiation_arms = sum(trials$Radiation), additional_agent_arms = sum(trials$AdditionalAgents),
-      other_intervention_arms = sum(trials$OtherInterventions),
-      examples = select(examples, NCTId, Arm, AdditionalEntries)
-    )
-  })
-  observeEvent(input$combo, {
-    session$sendCustomMessage("trial-qwen-reset", list())
-  }, ignoreInit = TRUE)
-  observeEvent(input$explain_trial_qwen, {
-    facts <- evidence()
-    facts$examples <- unname(lapply(seq_len(nrow(facts$examples)), function(i) {
-      as.list(facts$examples[i, , drop = FALSE])
-    }))
-    session$sendCustomMessage("trial-qwen-explain", facts)
-  })
+registry_evidence <- function(trials, regimen) {
+  arms <- summarise_registry_arms(trials, regimen)
+  examples <- arms %>%
+    filter(nzchar(AdditionalEntries)) %>%
+    arrange(desc(Radiation | AdditionalAgents), NCTId, Arm) %>%
+    distinct(NCTId, .keep_all = TRUE) %>%
+    slice_head(n = 4L) %>%
+    select(NCTId, Arm, AdditionalEntries)
+  list(
+    regimen = gsub("_", " + ", regimen, fixed = TRUE),
+    arms = nrow(arms), studies = n_distinct(arms$NCTId),
+    radiation_arms = sum(arms$Radiation), additional_agent_arms = sum(arms$AdditionalAgents),
+    other_intervention_arms = sum(arms$OtherInterventions),
+    examples = examples
+  )
+}
 
+registry_regimens <- Clinical_Cisplatin_Combinations_Final$ClinicalCombination
+trial_registry_facts <- setNames(lapply(registry_regimens, function(regimen) {
+  registry_evidence(filter(Trial_Arm_Matches, Regimen == regimen), regimen)
+}), registry_regimens)
+
+trial_registry_assistant_server <- function(input, output) {
+  shown_regimen <- eventReactive(input$explain_trial_regimen, input$combo)
   output$trial_assistant_answer <- renderUI({
     req(identical(shown_regimen(), input$combo))
-    facts <- evidence()
+    facts <- trial_registry_facts[[input$combo]]
     validate(need(facts$arms > 0, "No same-arm registry match was identified for this preset."))
     examples <- facts$examples
     tagList(

@@ -273,7 +273,7 @@ server <- function(input, output, session) {
     req(input$combo)
     filter(Trial_Arm_Matches, Regimen == input$combo)
   })
-  trial_registry_assistant_server(input, output, session, registry_trials)
+  trial_registry_assistant_server(input, output)
   output$trials <- renderDT({
     trials <- registry_trials()
     validate(need(nrow(trials), "No same-arm registry match was identified for this preset."))

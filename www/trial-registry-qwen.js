@@ -9,20 +9,32 @@
   const progressLabel = document.getElementById("trial_qwen_progress_label");
   let engine;
   let busy = false;
-  let revision = 0;
+  const regimen = document.getElementById("combo");
+  const evidence = JSON.parse(document.getElementById("trial_qwen_facts").dataset.facts);
+  let selected = regimen.value;
 
-  Shiny.addCustomMessageHandler("trial-qwen-reset", () => {
-    revision += 1;
+  function clearOldExplanation() {
+    if (selected === regimen.value) return;
+    selected = regimen.value;
     answer.textContent = "";
     progressPanel.hidden = true;
     status.textContent = busy ? "Finishing the previous request." : "";
-  });
+  }
 
-  Shiny.addCustomMessageHandler("trial-qwen-explain", async (facts) => {
+  // Selectize emits a jQuery change on the original select.
+  regimen.addEventListener("change", clearOldExplanation);
+  window.jQuery?.(regimen).on("change", clearOldExplanation);
+  button.disabled = false;
+  status.textContent = "";
+
+  button.addEventListener("click", async () => {
     if (busy) return;
+    clearOldExplanation();
+    const current = regimen.value;
+    const facts = evidence[current];
     answer.textContent = "";
     progressPanel.hidden = true;
-    if (!facts.arms) {
+    if (!facts?.arms) {
       status.textContent = "No matched registry arms are available for this regimen.";
       return;
     }
@@ -31,7 +43,6 @@
       return;
     }
 
-    const current = ++revision;
     busy = true;
     button.disabled = true;
     try {
@@ -41,10 +52,10 @@
         progressLabel.textContent = "Starting…";
         status.textContent = "Preparing the browser runtime.";
         const { CreateMLCEngine } = await import(webllmUrl);
-        if (current === revision) status.textContent = "Downloading or loading model files.";
+        if (current === regimen.value) status.textContent = "Downloading or loading model files.";
         engine = await CreateMLCEngine(model, {
           initProgressCallback: ({ progress }) => {
-            if (current !== revision || !Number.isFinite(progress)) return;
+            if (current !== regimen.value || !Number.isFinite(progress)) return;
             const percent = Math.max(0, Math.min(100, Math.floor(progress * 100)));
             progressBar.value = percent;
             progressLabel.textContent = `${percent}%`;
@@ -52,7 +63,7 @@
           },
         });
       }
-      if (current !== revision) return;
+      if (current !== regimen.value) return;
       if (!progressPanel.hidden) {
         progressBar.value = 100;
         progressLabel.textContent = "100% · Model ready";
@@ -74,7 +85,7 @@
         temperature: 0,
         max_tokens: 280,
       });
-      if (current !== revision) return;
+      if (current !== regimen.value) return;
 
       const text = response.choices[0]?.message?.content?.trim() || "";
       const permitted = new Set(facts.examples.map((example) => example.NCTId));
@@ -87,14 +98,14 @@
       answer.textContent = text;
       status.textContent = "Qwen draft. Check the counts and linked trial records in the registry summary.";
     } catch {
-      if (current === revision) {
+      if (current === regimen.value) {
         progressPanel.hidden = true;
         status.textContent = "Qwen could not run on this device. Use Summarise registry evidence for the local summary.";
       }
     } finally {
       busy = false;
       button.disabled = false;
-      if (current !== revision) status.textContent = "";
+      if (current !== regimen.value) status.textContent = "";
     }
   });
 })();

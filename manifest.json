@@ -2554,10 +2554,10 @@
   },
   "files": {
     "www/trial-registry-qwen.js": {
-      "checksum": "8d14450a6d1251b20b07aa51b5419c10"
+      "checksum": "a56cef9cf2716aa2fbd483be839db10e"
     },
     "app_modules/12_trial_registry_assistant.R": {
-      "checksum": "ec3cfca7082217d38364e7a721262fd9"
+      "checksum": "f7ae47d4029193ffa44fa787bfaa72c6"
     },
     "data/melanoma_triplet_example.csv": {
       "checksum": "a187fbc823dd0fe590c37403a6c03da4"
@@ -2593,7 +2593,7 @@
       "checksum": "f8c3ebc147f69435d2d105a982982e83"
     },
     "app_modules/08_server.R": {
-      "checksum": "95a0324ea5cddad0a5201b61312358e7"
+      "checksum": "c777278063bbc5eaa26c700c680e9c0d"
     },
     "app_modules/10_cohort_validation.R": {
       "checksum": "baf1b183a258b3f6c7285d377c434a30"
