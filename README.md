@@ -68,4 +68,4 @@ The experimental tab accepts a three-drug CSV in the same layout as the download
 
 ### Optional Trial registry assistant
 
-The registry table and ClinicalTrials.gov links work without AI. To enable the explanation button, configure `OPENAI_API_KEY` as a server-side deployment secret and ensure the host has the `curl` executable and outbound access to the OpenAI API. `TRIAL_ASSISTANT_MODEL` optionally overrides the default `gpt-5-mini`. A button click sends only the current regimen and its curated public registry arm fields. The generated explanation identifies NCT records and distinguishes additional treatments from other listed interventions.
+Select **Summarise registry evidence** to count the matched cervical cancer trial arms and review examples of additional registered interventions. The summary is calculated locally from the curated records and requires no API key.

@@ -2554,13 +2554,13 @@
   },
   "files": {
     "app_modules/12_trial_registry_assistant.R": {
-      "checksum": "df6f7db16bf669975a7867e0e3207708"
+      "checksum": "2925de3e3d61aad555fe8359ff68dcbc"
     },
     "data/melanoma_triplet_example.csv": {
       "checksum": "a187fbc823dd0fe590c37403a6c03da4"
     },
     "README.md": {
-      "checksum": "3bed8e5ab3fb19fe5f3f032297ede743"
+      "checksum": "a48f81577e1f7149885bb2bab9f22f16"
     },
     "VEGF_compounds_screened_in_cervical_GDSC2.csv": {
       "checksum": "701da9d405cad8ccad6178fff6d46e63"
