@@ -59,6 +59,60 @@ server <- function(input, output, session) {
       ungroup()
   })
 
+  observeEvent(result(), {
+    models <- result()$ranking %>% distinct(ModelID, CellLineName) %>% arrange(CellLineName)
+    choices <- setNames(models$ModelID, coalesce(models$CellLineName, models$ModelID))
+    preferred <- intersect(c(isolate(input$network_model), choices[names(choices) == "HeLa"],
+                             choices), choices)
+    updateSelectInput(session, "network_model", choices = choices, selected = head(preferred, 1))
+  })
+
+  output$expectation_network <- renderPlot({
+    validate(need(input$run > 0, "Calculate expectations to view the networks."))
+    req(input$network_model)
+    rows <- top_candidates() %>% filter(ModelID == input$network_model)
+    validate(need(nrow(rows), "Select an eligible cell line."))
+    methods <- c("Bliss independence" = "BlissExpectedIncrementPP",
+                 "Highest Single Agent (HSA)" = "HSAExpectedIncrementPP",
+                 "Loewe additivity" = "LoeweExpectedIncrementPP",
+                 "ZIP no potency shift" = "ZIPExpectedIncrementPP")
+    angle <- 2 * pi * (seq_len(nrow(rows)) - 1) / nrow(rows) + pi / 2
+    nodes <- imap_dfr(methods, function(column, method) {
+      tibble(Method = method, CompoundID = rows$CompoundID,
+             Drug = coalesce(rows$CompoundName, rows$CompoundID),
+             x = cos(angle), y = sin(angle),
+             Increment = rows[[column]] %||% rep(NA_real_, nrow(rows)))
+    }) %>%
+      mutate(Method = factor(Method, levels = names(methods)))
+
+    edges <- nodes %>%
+      filter(is.finite(Increment)) %>%
+      group_by(Method) %>%
+      arrange(Increment, CompoundID, .by_group = TRUE) %>%
+      mutate(xend = lead(x), yend = lead(y), Gap = lead(Increment) - Increment) %>%
+      filter(!is.na(Gap)) %>%
+      ungroup()
+
+    ggplot(nodes, aes(x, y)) +
+      geom_segment(data = edges, aes(xend = xend, yend = yend, alpha = 1 / (1 + Gap)),
+                   colour = "grey40", show.legend = FALSE) +
+      scale_alpha_identity() +
+      geom_point(aes(size = abs(Increment), fill = Increment), shape = 21,
+                 colour = "grey35", na.rm = TRUE) +
+      geom_point(data = filter(nodes, !is.finite(Increment)), shape = 4, colour = "grey55") +
+      geom_text(aes(x = 1.20 * x, y = 1.15 * y, label = Drug), size = 3, check_overlap = TRUE) +
+      facet_wrap(vars(Method), ncol = 2) +
+      scale_size_continuous(range = c(3, 10)) +
+      scale_fill_gradient2(low = "#3B6FB6", mid = "#FFFFFF", high = "#D88400", midpoint = 0) +
+      coord_equal(xlim = c(-1.6, 1.6), ylim = c(-1.35, 1.35)) +
+      labs(title = paste("Candidate expectations:", coalesce(rows$CellLineName[1], rows$ModelID[1])),
+           subtitle = "Same Bliss-ranked candidates in each panel. Edges join adjacent scores, with darker edges for smaller gaps.",
+           caption = "Crosses mark unavailable expectations. Increments are model-based benchmarks in percentage points.",
+           size = "Absolute increment", fill = "Signed increment") +
+      theme_void(base_size = 11) +
+      theme(legend.position = "bottom", panel.spacing = grid::unit(1, "lines"))
+  })
+
   ranked_target_context <- reactive({
     ranking <- top_candidates() %>%
       group_by(ModelID) %>%
