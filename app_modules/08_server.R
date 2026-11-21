@@ -218,24 +218,39 @@ server <- function(input, output, session) {
       ungroup() %>%
       mutate(Panel = coalesce(CellLineName, ModelID),
              Tick = factor(rev(seq_len(n()))),
-             Label = coalesce(CompoundName, CompoundID))
+             Label = coalesce(CompoundName, CompoundID),
+             MonotherapyClass = case_when(
+               MeanSingleAgentInhibitionPct >= 75 ~ "High intrinsic response",
+               MeanSingleAgentInhibitionPct >= 40 ~ "Moderate intrinsic response",
+               MeanSingleAgentInhibitionPct > 0 ~ "Low intrinsic response",
+               TRUE ~ "No positive inhibition"
+             ))
   })
 
   output$top_monotherapy_plot <- renderPlot({
     rows <- top_monotherapy()
     labels <- setNames(rows$Label, as.character(rows$Tick))
-    ggplot(rows, aes(MeanSingleAgentInhibitionPct, Tick)) +
-      geom_col(fill = "#F8766D", width = 0.9, orientation = "y") +
+    ggplot(rows, aes(MeanSingleAgentInhibitionPct, Tick, fill = MonotherapyClass)) +
+      geom_col(data = filter(rows, MeanSingleAgentInhibitionPct > 0),
+               width = 0.9, orientation = "y", show.legend = TRUE) +
+      geom_point(data = filter(rows, MonotherapyClass == "No positive inhibition"),
+                 aes(x = 0), shape = 21, colour = "#C77CFF", size = 2) +
       facet_wrap(vars(Panel), ncol = 4, scales = "free_y") +
       scale_y_discrete(labels = labels) +
       scale_x_continuous(breaks = seq(0, 100, 25)) +
       coord_cartesian(xlim = c(0, 100)) +
+      scale_fill_manual(values = c("High intrinsic response" = "#F8766D",
+                                   "Low intrinsic response" = "#7CAE00",
+                                   "Moderate intrinsic response" = "#00BFC4",
+                                   "No positive inhibition" = "#C77CFF")) +
       labs(title = "Top monotherapy responses in matched cervical models",
            subtitle = paste0("Measured GDSC2 viability summarised on the candidate grid (µM) ",
                              gsub("|", ", ", rows$CandidateGridUM[[1]], fixed = TRUE)),
-           x = "Mean single-agent inhibition (%)", y = "Candidate compound") +
+           x = "Mean single-agent inhibition (%)", y = "Candidate compound",
+           fill = "Monotherapy class",
+           caption = "High: ≥75%. Moderate: 40 to <75%. Low: >0 to <40%. Purple dot: ≤0%.") +
       theme_bw(base_size = 11) +
-      theme(axis.text.y = element_text(size = 8))
+      theme(axis.text.y = element_text(size = 8), legend.position = "bottom")
   }, height = function() {
     max(360, 110 + 245 * ceiling(n_distinct(top_monotherapy()$ModelID) / 4))
   })
