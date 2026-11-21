@@ -387,33 +387,40 @@ cross_scc_validation_ui <- function() {
       id = "cross_scc_results_tab",
       tabPanel(
         "Cohort inclusion",
+        qwen_panel_ui("cross_inclusion"),
         h4("Auditable histology and primary-tumour filtering"),
         DTOutput("cross_scc_audit_table")
       ),
       tabPanel(
         "Patient target states",
+        qwen_panel_ui("cross_patient_states"),
         plotOutput("cross_scc_heatmap", height = "800px")
       ),
       tabPanel(
         "Target-high prevalence",
+        qwen_panel_ui("cross_prevalence"),
         plotOutput("cross_scc_prevalence_plot", height = "700px"),
         DTOutput("cross_scc_prevalence_table")
       ),
       tabPanel(
         "RNA programme scores",
+        qwen_panel_ui("cross_programmes"),
         plotOutput("cross_scc_programme_plot", height = "800px")
       ),
       tabPanel(
         "Projected states",
+        qwen_panel_ui("cross_projected"),
         plotOutput("cross_scc_state_plot", height = "650px"),
         DTOutput("cross_scc_state_table")
       ),
       tabPanel(
         "Cross-SCC PCA",
+        qwen_panel_ui("cross_pca"),
         plotOutput("cross_scc_pca_plot", height = "700px")
       ),
       tabPanel(
         "Network preservation",
+        qwen_panel_ui("cross_preservation"),
         h4("Concordance of pairwise target correlations"),
         p("Interpret cautiously because the GSE299125 invasive reference contains 13 patients."),
         DTOutput("cross_scc_network_table")
@@ -692,6 +699,23 @@ cross_scc_validation_server <- function(input, output, session, ranked_target_co
       "Network preservation" = network_results(),
       analysis_data()$audit
     )
+  })
+
+  qwen_cross_tabs <- c(
+    inclusion = "Cohort inclusion",
+    patient_states = "Patient target states",
+    prevalence = "Target-high prevalence",
+    programmes = "RNA programme scores",
+    projected = "Projected states",
+    pca = "Cross-SCC PCA",
+    preservation = "Network preservation"
+  )
+  purrr::iwalk(qwen_cross_tabs, function(title, id) {
+    qwen_panel_server(output, paste0("cross_", id), title, function() {
+      req(identical(input$cross_scc_results_tab %||% "Cohort inclusion", title))
+      displayed_download()
+    }, "Explain only the aggregate ranges for the selected subtab. These are descriptive cohort comparisons.",
+    aggregate_only = TRUE)
   })
 
   output$download_cross_scc_table <- downloadHandler(

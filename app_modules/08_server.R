@@ -365,16 +365,44 @@ server <- function(input, output, session) {
   }, height = function() {
     max(360, 170 + 230 * ceiling(n_distinct(monotherapy()$ModelID) / 4))
   })
-  output$audit_summary <- renderDT({
-    rows <- Monotherapy_Fit_Audit %>%
+  fit_audit_summary <- reactive({
+    Monotherapy_Fit_Audit %>%
       pivot_longer(c(OriginalFit, SlopeReorientedFit), names_to = "Model", values_to = "Prediction") %>%
       group_by(Model) %>%
       summarise(N = n(), MAE = mean(abs(Prediction - ViabilityFraction)),
                 RMSE = sqrt(mean((Prediction - ViabilityFraction)^2)),
                 Bias = mean(Prediction - ViabilityFraction), .groups = "drop")
-    datatable(rows, rownames = FALSE)
   })
+  output$audit_summary <- renderDT(datatable(fit_audit_summary(), rownames = FALSE))
   output$audit_table <- renderDT(datatable(Monotherapy_Fit_Audit, rownames = FALSE))
+  qwen_panel_server(output, "increments", "Expected increments", function() result()$ranking,
+                    "Expected increments are calculated from measured monotherapy. They do not establish observed combination efficacy or synergy.")
+  qwen_panel_server(output, "network", "Expectation networks", function() {
+    req(input$network_model)
+    filter(top_candidates(), ModelID == input$network_model)
+  }, "The graph connects adjacent candidate ranks within each enabled expectation method. Edges do not establish biological interactions.")
+  qwen_panel_server(output, "candidates", "Top candidates by model", top_candidates,
+                    "Candidates are shortlisted by expected Bliss increment within each model.")
+  qwen_panel_server(output, "reference", "Reference expectation", function() result()$reference,
+                    "The reference is an expectation based on monotherapy data and is not a measured doublet.")
+  qwen_panel_server(output, "coverage", "Dose coverage", function() {
+    result()$coverage %>% count(GridComplete, name = "ModelCompoundPairs")
+  }, "Counts describe model–compound pairs with or without complete candidate dose coverage.")
+  qwen_panel_server(output, "targets", "Target context", ranked_target_context,
+                    "CRISPR dependency, RNA expression and mutation status describe separate evidence types. Missing values mean unavailable evidence.")
+  qwen_panel_server(output, "crispr", "CRISPR dependency", function() {
+    ranked_target_context() %>% count(DependencyClass)
+  }, "Counts refer to drug–target associations by dependency class. Dependency is separate from drug response.")
+  qwen_panel_server(output, "rna", "Target RNA expression", function() {
+    ranked_target_context() %>% count(ExpressionClass)
+  }, "Counts refer to drug–target associations by expression class. Expression is separate from dependency.")
+  qwen_panel_server(output, "mutations", "Somatic mutations", function() {
+    ranked_target_context() %>% count(MutationStatus)
+  }, "Counts refer to drug–target associations by mutation status. Missing evidence must not be interpreted as wild type.")
+  qwen_panel_server(output, "mono", "Measured monotherapy", monotherapy,
+                    "Responses are measured for single drugs at the displayed concentrations.")
+  qwen_panel_server(output, "audit", "Fit audit", fit_audit_summary,
+                    "Lower MAE or RMSE means closer agreement with measured viability. Bias is signed.")
   output$download_audit <- downloadHandler(
     filename = function() "GDSC2MonotherapyFitAudit_Cervix.csv",
     content = function(path) write_csv(Monotherapy_Fit_Audit, path)

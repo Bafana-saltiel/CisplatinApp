@@ -17,7 +17,7 @@ trial_registry_assistant_ui <- function() {
     ),
     tags$p("Preparing the Qwen controls…", id = "trial_qwen_status", role = "status"),
     tags$div(id = "trial_qwen_answer", style = "white-space: pre-wrap;"),
-    tags$script(src = "trial-registry-qwen.js?v=3", defer = NA)
+    tags$script(src = "trial-registry-qwen.js?v=4", defer = NA)
   )
 }
 
@@ -96,6 +96,37 @@ trial_registry_assistant_server <- function(input, output) {
         }))
       ),
       p("Registry arm matches describe what was studied. Assessments and procedures are shown as registered, and the summary does not assess efficacy.")
+    )
+  })
+}
+
+qwen_panel_ui <- function(id) {
+  tags$details(
+    tags$summary("Qwen explanation"),
+    uiOutput(paste0("qwen_context_", id))
+  )
+}
+
+qwen_panel_server <- function(output, id, title, get_rows, guidance, aggregate_only = FALSE) {
+  output[[paste0("qwen_context_", id)]] <- renderUI({
+    rows <- get_rows()
+    validate(need(nrow(rows), "There are no results to explain for this selection."))
+    numeric_rows <- select(rows, where(is.numeric))
+    ranges <- lapply(numeric_rows, function(values) {
+      values <- values[is.finite(values)]
+      if (length(values)) round(c(min = min(values), mean = mean(values), max = max(values)), 3) else NULL
+    })
+    ranges <- Filter(Negate(is.null), ranges)
+    facts <- list(
+      panel = title, guidance = guidance, row_count = nrow(rows),
+      numeric_ranges = lapply(ranges, as.list),
+      example_rows = if (!aggregate_only) head(select(rows, where(~ is.atomic(.x))), 5L) else NULL
+    )
+    tags$div(
+      class = "qwen-panel", `data-context` = jsonlite::toJSON(facts, auto_unbox = TRUE, na = "null"),
+      tags$button(type = "button", class = "btn btn-default qwen-panel-button", "Explain with Qwen"),
+      tags$p(class = "qwen-panel-status", role = "status"),
+      tags$p(class = "qwen-panel-answer", style = "white-space: pre-wrap;")
     )
   })
 }

@@ -65,6 +65,7 @@ compare_ovarian_gdsc <- function(rows, measurements = Ovarian_Monotherapy) {
 combination_benchmark_ui <- function() {
   tabPanel(
     "Experimental combinations",
+    qwen_panel_ui("ovarian_benchmark"),
     h4("Ovarian cisplatin–paclitaxel benchmark"),
     p("GDSC2 expectations use measured ovarian monotherapy at the experimental doses, with interpolation inside the measured ranges. Observed inhibition comes from NCI ALMANAC combination wells. The diagonal indicates agreement across the two assays."),
     textOutput("ovarian_gdsc_coverage"),
@@ -73,6 +74,7 @@ combination_benchmark_ui <- function() {
     hr(),
     triplet_benchmark_ui(),
     hr(),
+    qwen_panel_ui("pair_benchmark"),
     h4("Analyse experimental data using matched controls"),
     p("The built-in example uses NCI ALMANAC ovarian cisplatin–paclitaxel measurements. Upload a CSV to analyse your own two-drug experiment."),
     p("Enter one row per tested dose pair, with both matching single-agent measurements and the observed combination response. Use vehicle-relative fractions (1 = vehicle control) and doses in µM. Single-agent fractions above 1 are bounded at 1 for both expectations. Observed combination values are retained as entered."),
@@ -90,6 +92,8 @@ combination_benchmark_server <- function(input, output, session) {
   ovarian_comparison <- reactive({
     compare_ovarian_gdsc(read_combination_benchmark(benchmark_example))
   })
+  qwen_panel_server(output, "ovarian_benchmark", "Ovarian benchmark", ovarian_comparison,
+                    "This comparison uses GDSC2-derived expectations and measured ALMANAC combination responses. Results depend on dose coverage and assay differences.")
   output$ovarian_gdsc_coverage <- renderText({
     rows <- ovarian_comparison()
     matched <- rows %>% filter(Coverage == "Comparable dose pair")
@@ -133,6 +137,8 @@ combination_benchmark_server <- function(input, output, session) {
     req(nrow(rows))
     rows
   })
+  qwen_panel_server(output, "pair_benchmark", "Measured doublets", selected_model,
+                    "Bliss and HSA are compared with measured doublet inhibition using matched monotherapy controls.")
   output$benchmark_plot <- renderPlot({
     rows <- selected_model() %>%
       pivot_longer(c(BlissExpected, HSAExpected), names_to = "Benchmark", values_to = "Expected")
@@ -213,6 +219,7 @@ triplet_benchmark_ui <- function() {
     h4("Experimental third-drug additions"),
     p("The melanoma example uses vemurafenib and trametinib as the measured backbone. Upload a CSV in the same format to analyse your own triplets. Label the two backbone drugs as Drug1 and Drug2, and include rows at zero concentration for the omitted drugs in each matched control. Use µM and vehicle-relative viability."),
     p("The expected inhibition uses the measured doublet and the third drug alone under Bliss independence. Values above 1 are bounded for the expectation. The results show both the gain over the measured doublet and the deviation from Bliss."),
+    qwen_panel_ui("triplet_benchmark"),
     downloadButton("triplet_example", "Download three-drug example"),
     fileInput("triplet_upload", "Upload three-drug experiment", accept = ".csv"),
     textOutput("triplet_coverage"),
@@ -230,6 +237,8 @@ triplet_benchmark_server <- function(input, output) {
     validate(need(nrow(rows), "No positive-dose triplet conditions found."))
     rows
   })
+  qwen_panel_server(output, "triplet_benchmark", "Measured triplets", triplets,
+                    "Gain over the measured doublet and deviation from the Bliss expectation are different quantities. Interpret the tested dose conditions descriptively.")
   output$triplet_coverage <- renderText({
     rows <- triplets()
     sprintf("%d of %d triplet conditions have measured viability and both matched controls.",

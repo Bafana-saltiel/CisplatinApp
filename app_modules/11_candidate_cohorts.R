@@ -171,6 +171,8 @@ candidate_cohort_server <- function(input, output, session, ranked_target_contex
       filter(CandidateRank <= input$candidate_cohort_top)
     candidate_cohort_projection(targets, cohort(), isTRUE(input$candidate_cohort_strongest))
   })
+  qwen_panel_server(output, "cohort", "Candidate cohort expression", function() projection()$summary,
+                    "Summaries describe target RNA expression in the selected cohort. Expression alone does not establish drug sensitivity.")
   output$candidate_cohort_coverage <- renderText({
     p <- projection()
     paste(nrow(p$rows), "model–compound–target rows,",

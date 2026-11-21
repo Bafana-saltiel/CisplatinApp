@@ -2554,10 +2554,10 @@
   },
   "files": {
     "www/trial-registry-qwen.js": {
-      "checksum": "e2bd3ced1522f9e94e3a33116d724b6a"
+      "checksum": "939ec72aa576bffdc4611b56f420e4d3"
     },
     "app_modules/12_trial_registry_assistant.R": {
-      "checksum": "4163d19ecd3b51cf2c35fda3dbd2abb1"
+      "checksum": "38f47f80fe66576726e1ee930d7853f0"
     },
     "data/melanoma_triplet_example.csv": {
       "checksum": "a187fbc823dd0fe590c37403a6c03da4"
@@ -2590,13 +2590,13 @@
       "checksum": "3954dd06a015b854aebaf8e228e3e7ff"
     },
     "app_modules/07_ui.R": {
-      "checksum": "f8c3ebc147f69435d2d105a982982e83"
+      "checksum": "65a151bb8dabb3779337a94931002b6d"
     },
     "app_modules/08_server.R": {
-      "checksum": "c777278063bbc5eaa26c700c680e9c0d"
+      "checksum": "c86026671191b7003be68acd226cbc7c"
     },
     "app_modules/10_cohort_validation.R": {
-      "checksum": "baf1b183a258b3f6c7285d377c434a30"
+      "checksum": "1b23b0bae5e5edcd3e89b022a27b443e"
     },
     "data/CRISPRGeneDependency_Cervix.csv": {
       "checksum": "8cc7341a4ce272840bd09eb707ae6c76"
@@ -2659,7 +2659,7 @@
       "checksum": "6622493a578896a4c0c3b5b06194f4e6"
     },
     "app_modules/11_candidate_cohorts.R": {
-      "checksum": "17f129da1c5d8e35811c2afb207cf0b9"
+      "checksum": "41e19215164fe5e8c17965723d9a9b82"
     },
     "scripts/prepare_candidate_cohorts.py": {
       "checksum": "1c6fe2415408d469f48cfec3cee30120"
@@ -2713,7 +2713,7 @@
       "checksum": "5c80cf46ea1b3481c030e1c16010b848"
     },
     "app_modules/06_combination_benchmark.R": {
-      "checksum": "fe261f870cf9c7048df281fd8e36fdfe"
+      "checksum": "74d8b8e597620a409ee852c88d0d2aab"
     },
     "data/ALMANAC_ovarian_cisplatin_paclitaxel.csv": {
       "checksum": "72f86c81c8cf06b2b30804300a6b3748"
