@@ -71,6 +71,8 @@ combination_benchmark_ui <- function() {
     plotOutput("ovarian_gdsc_plot", height = "550px"),
     downloadButton("ovarian_gdsc_download", "Download ovarian benchmark and dose coverage"),
     hr(),
+    triplet_benchmark_ui(),
+    hr(),
     h4("Analyse experimental data using matched controls"),
     p("The built-in example uses NCI ALMANAC ovarian cisplatin–paclitaxel measurements. Upload a CSV to analyse your own two-drug experiment."),
     p("Enter one row per tested dose pair, with both matching single-agent measurements and the observed combination response. Use vehicle-relative fractions (1 = vehicle control) and doses in µM. Single-agent fractions above 1 are bounded at 1 for both expectations. Observed combination values are retained as entered."),
@@ -84,6 +86,7 @@ combination_benchmark_ui <- function() {
 }
 
 combination_benchmark_server <- function(input, output, session) {
+  triplet_benchmark_server(input, output)
   ovarian_comparison <- reactive({
     compare_ovarian_gdsc(read_combination_benchmark(benchmark_example))
   })
@@ -151,5 +154,109 @@ combination_benchmark_server <- function(input, output, session) {
   output$benchmark_download <- downloadHandler(
     filename = function() "experimental_combination_comparisons.csv",
     content = function(path) write_csv(comparisons(), path)
+  )
+}
+
+triplet_example <- file.path(DATA_DIR, "melanoma_triplet_example.csv")
+
+read_triplet_benchmark <- function(path) {
+  input_fields <- c("Cell Name", "Drug1", "Drug2", "Drug3", "Drug1 Concentration",
+                    "Drug2 Concentration", "Drug3 Concentration", "Mean Relative Viability",
+                    "Small Mol Conc Unit")
+  rows <- readr::read_csv(path, col_types = readr::cols(.default = "c"),
+                         na = c("", "NA", "NaN"), show_col_types = FALSE)
+  if (!all(input_fields %in% names(rows)) || !nrow(rows) || nrow(readr::problems(rows))) {
+    stop("Use the columns in the three-drug example CSV.")
+  }
+  rows <- rows %>%
+    transmute(Model = `Cell Name`, Drug1, Drug2, Drug3,
+              Dose1 = as.numeric(`Drug1 Concentration`), Dose2 = as.numeric(`Drug2 Concentration`),
+              Dose3 = as.numeric(`Drug3 Concentration`), Viability = as.numeric(`Mean Relative Viability`),
+              Unit = `Small Mol Conc Unit`)
+  doses <- as.matrix(rows[c("Dose1", "Dose2", "Dose3")])
+  if (anyNA(rows[c("Model", "Drug1", "Drug2", "Drug3", "Unit")]) ||
+      any(rows$Unit != "uM") || any(!is.finite(doses) | doses < 0) ||
+      any(!is.na(rows$Viability) & (!is.finite(rows$Viability) | rows$Viability < 0))) {
+    stop("Use model and drug names, non-negative concentrations in uM, and vehicle-relative viability.")
+  }
+  keys <- c("Model", "Drug1", "Drug2", "Drug3", "Dose1", "Dose2", "Dose3")
+  conditions <- distinct(rows, across(all_of(keys)), Viability)
+  if (anyDuplicated(conditions[keys])) {
+    stop("Supply one consistent mean viability per model, drug set and dose condition.")
+  }
+  backbone <- conditions %>% filter(Dose1 > 0, Dose2 > 0, Dose3 == 0) %>%
+    select(-Dose3, BackboneViability = Viability)
+  single <- conditions %>% filter(Dose1 == 0, Dose2 == 0, Dose3 > 0) %>%
+    select(-Dose1, -Dose2, ThirdDrugViability = Viability)
+  conditions %>%
+    filter(Dose1 > 0, Dose2 > 0, Dose3 > 0) %>%
+    rename(TripletViability = Viability) %>%
+    left_join(backbone, by = setdiff(keys, "Dose3")) %>%
+    left_join(single, by = setdiff(keys, c("Dose1", "Dose2"))) %>%
+    mutate(
+      Coverage = case_when(
+        is.na(TripletViability) ~ "Missing triplet viability",
+        is.na(BackboneViability) | is.na(ThirdDrugViability) ~ "Missing matched control viability",
+        TRUE ~ "Comparable dose condition"
+      ),
+      ObservedInhibition = 100 * (1 - TripletViability),
+      BackboneInhibition = 100 * (1 - BackboneViability),
+      BlissExpectedInhibition = 100 * (1 - pmin(1, BackboneViability) * pmin(1, ThirdDrugViability)),
+      AddedInhibitionPP = ObservedInhibition - BackboneInhibition,
+      BlissDeviationPP = ObservedInhibition - BlissExpectedInhibition
+    )
+}
+
+triplet_benchmark_ui <- function() {
+  tagList(
+    hr(),
+    h4("Experimental third-drug additions"),
+    p("The melanoma example uses vemurafenib and trametinib as the measured backbone. Upload a CSV in the same format to analyse your own triplets. Label the two backbone drugs as Drug1 and Drug2, and include rows at zero concentration for the omitted drugs in each matched control. Use µM and vehicle-relative viability."),
+    p("The expected inhibition uses the measured doublet and the third drug alone under Bliss independence. Values above 1 are bounded for the expectation. The results show both the gain over the measured doublet and the deviation from Bliss."),
+    downloadButton("triplet_example", "Download three-drug example"),
+    fileInput("triplet_upload", "Upload three-drug experiment", accept = ".csv"),
+    textOutput("triplet_coverage"),
+    plotOutput("triplet_plot", height = "500px"),
+    DTOutput("triplet_results"),
+    downloadButton("triplet_download", "Download triplet results and coverage")
+  )
+}
+
+triplet_benchmark_server <- function(input, output) {
+  triplets <- reactive({
+    path <- if (is.null(input$triplet_upload)) triplet_example else input$triplet_upload$datapath
+    rows <- tryCatch(read_triplet_benchmark(path), error = function(error) error)
+    validate(need(!inherits(rows, "error"), if (inherits(rows, "error")) conditionMessage(rows)))
+    validate(need(nrow(rows), "No positive-dose triplet conditions found."))
+    rows
+  })
+  output$triplet_coverage <- renderText({
+    rows <- triplets()
+    sprintf("%d of %d triplet conditions have measured viability and both matched controls.",
+            sum(rows$Coverage == "Comparable dose condition"), nrow(rows))
+  })
+  output$triplet_plot <- renderPlot({
+    rows <- filter(triplets(), Coverage == "Comparable dose condition")
+    validate(need(nrow(rows), "No triplets have measured viability and both matched controls."))
+    ggplot(rows, aes(BlissExpectedInhibition, ObservedInhibition, colour = Drug3)) +
+      geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey45") +
+      geom_point(alpha = 0.75, size = 2) +
+      facet_wrap(vars(Model), ncol = 3) +
+      coord_equal() +
+      labs(x = "Bliss-expected inhibition (%)", y = "Observed triplet inhibition (%)",
+           colour = "Third drug") +
+      theme_bw() +
+      theme(legend.position = "bottom")
+  })
+  output$triplet_results <- renderDT({
+    datatable(triplets(), rownames = FALSE, options = list(scrollX = TRUE))
+  })
+  output$triplet_example <- downloadHandler(
+    filename = function() basename(triplet_example),
+    content = function(path) file.copy(triplet_example, path)
+  )
+  output$triplet_download <- downloadHandler(
+    filename = function() "experimental_triplet_results.csv",
+    content = function(path) write_csv(triplets(), path)
   )
 }

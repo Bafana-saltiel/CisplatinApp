@@ -2553,8 +2553,11 @@
     }
   },
   "files": {
+    "data/melanoma_triplet_example.csv": {
+      "checksum": "a187fbc823dd0fe590c37403a6c03da4"
+    },
     "README.md": {
-      "checksum": "4ce1c04427272f504cb026af8fd0341a"
+      "checksum": "cbd5f9bd9718e029f66c390707efa678"
     },
     "VEGF_compounds_screened_in_cervical_GDSC2.csv": {
       "checksum": "701da9d405cad8ccad6178fff6d46e63"
@@ -2623,7 +2626,7 @@
       "checksum": "5097ed7eb83cd1cc06f7fee3e117b220"
     },
     "data/input-provenance.csv": {
-      "checksum": "d9236599789dd34cf5bd16cf6516c924"
+      "checksum": "319cd9a6f187dfd85e0586e338403ca7"
     },
     "data/sanger-fit-audit-summary.json": {
       "checksum": "24f70346a6e59911e566afb7f2c4d96e"
@@ -2704,7 +2707,7 @@
       "checksum": "5c80cf46ea1b3481c030e1c16010b848"
     },
     "app_modules/06_combination_benchmark.R": {
-      "checksum": "ec3a1d46f4b2ee1a68ac9d40d30e8658"
+      "checksum": "fe261f870cf9c7048df281fd8e36fdfe"
     },
     "data/ALMANAC_ovarian_cisplatin_paclitaxel.csv": {
       "checksum": "72f86c81c8cf06b2b30804300a6b3748"
