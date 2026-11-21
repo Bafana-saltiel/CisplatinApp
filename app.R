@@ -11,6 +11,7 @@ module_files <- c(
   "app_modules/10_cohort_validation.R",
   "app_modules/11_candidate_cohorts.R",
   "app_modules/06_combination_benchmark.R",
+  "app_modules/12_trial_registry_assistant.R",
   "app_modules/07_ui.R",
   "app_modules/08_server.R"
 )

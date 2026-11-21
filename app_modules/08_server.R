@@ -269,11 +269,21 @@ server <- function(input, output, session) {
   output$target_context <- renderDT({
     datatable(ranked_target_context(), rownames = FALSE, options = list(scrollX = TRUE))
   })
-  output$trials <- renderDT({
+  registry_trials <- reactive({
     req(input$combo)
-    trials <- Trial_Arm_Matches %>% filter(Regimen == input$combo)
+    filter(Trial_Arm_Matches, Regimen == input$combo)
+  })
+  trial_registry_assistant_server(input, output, registry_trials)
+  output$trials <- renderDT({
+    trials <- registry_trials()
     validate(need(nrow(trials), "No same-arm registry match was identified for this preset."))
-    datatable(trials, rownames = FALSE, options = list(scrollX = TRUE))
+    trials$RecordURL <- vapply(trials$NCTId, function(id) {
+      if (is.na(id) || !grepl("^NCT[0-9]{8}$", id)) return("")
+      as.character(tags$a(href = paste0("https://clinicaltrials.gov/study/", id),
+                          target = "_blank", rel = "noopener noreferrer", id))
+    }, character(1))
+    datatable(trials, rownames = FALSE, escape = setdiff(names(trials), "RecordURL"),
+              options = list(scrollX = TRUE))
   })
   output$coverage <- renderDT(datatable(result()$coverage, rownames = FALSE))
 

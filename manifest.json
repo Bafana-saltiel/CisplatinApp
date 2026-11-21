@@ -2553,17 +2553,20 @@
     }
   },
   "files": {
+    "app_modules/12_trial_registry_assistant.R": {
+      "checksum": "df6f7db16bf669975a7867e0e3207708"
+    },
     "data/melanoma_triplet_example.csv": {
       "checksum": "a187fbc823dd0fe590c37403a6c03da4"
     },
     "README.md": {
-      "checksum": "cbd5f9bd9718e029f66c390707efa678"
+      "checksum": "3bed8e5ab3fb19fe5f3f032297ede743"
     },
     "VEGF_compounds_screened_in_cervical_GDSC2.csv": {
       "checksum": "701da9d405cad8ccad6178fff6d46e63"
     },
     "app.R": {
-      "checksum": "ba5b78bf6c3e37609a6bda7659f346bc"
+      "checksum": "e9ab1ad507cdecda8325c01883d49e70"
     },
     "app_modules/00_packages.R": {
       "checksum": "66db2b85a97b6e197d529692739add5a"
@@ -2584,10 +2587,10 @@
       "checksum": "3954dd06a015b854aebaf8e228e3e7ff"
     },
     "app_modules/07_ui.R": {
-      "checksum": "a538619432e9078936f4ff8b92720e07"
+      "checksum": "f8c3ebc147f69435d2d105a982982e83"
     },
     "app_modules/08_server.R": {
-      "checksum": "c97a068bf2b12f882fceffe0adea890b"
+      "checksum": "55301c62270b7a109fd92dbd5eba7460"
     },
     "app_modules/10_cohort_validation.R": {
       "checksum": "baf1b183a258b3f6c7285d377c434a30"

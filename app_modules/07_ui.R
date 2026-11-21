@@ -46,7 +46,8 @@ ui <- fluidPage(
                  h4("Measured dose inputs"), DTOutput("reference_doses")),
         tabPanel("Dose coverage", DTOutput("coverage")),
         combination_benchmark_ui(),
-        tabPanel("Trial registry", p("Registry evidence was curated for cervical cancer. Registry arms can include other interventions and schedules. Review the linked records for full details."), DTOutput("trials")),
+        tabPanel("Trial registry", p("Registry evidence was curated for cervical cancer. Registry arms can include other interventions and schedules. Review the linked records for full details."),
+                 trial_registry_assistant_ui(), DTOutput("trials")),
         tabPanel("Target context",
                  p("Annotations for the ten largest expected increments per model, with optional DepMap gene dependency, RNA and mutation data. These annotations describe candidate targets."),
                  tabsetPanel(

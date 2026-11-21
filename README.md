@@ -65,3 +65,7 @@ The ovarian benchmark also compares expected inhibition computed from GDSC2 mono
 ### Experimental three-drug benchmark
 
 The experimental tab accepts a three-drug CSV in the same layout as the downloadable melanoma example supplied for this workflow. Each model and ordered drug set represents one experiment. Provide a consistent mean relative viability for each dose condition, in micromolar concentrations (`uM`). Repeat rows sharing the same mean are collapsed. Include the measured doublet at the exact triplet backbone doses with Drug3 set to zero, and the measured third drug alone at its matching dose with Drug1 and Drug2 set to zero. The export reports coverage, gain over the measured doublet and deviation from Bliss independence applied to that doublet and the third drug. The example illustrates the method with a vemurafenib–trametinib backbone in melanoma.
+
+### Optional Trial registry assistant
+
+The registry table and ClinicalTrials.gov links work without AI. To enable the explanation button, configure `OPENAI_API_KEY` as a server-side deployment secret and ensure the host has the `curl` executable and outbound access to the OpenAI API. `TRIAL_ASSISTANT_MODEL` optionally overrides the default `gpt-5-mini`. A button click sends only the current regimen and its curated public registry arm fields. The generated explanation identifies NCT records and distinguishes additional treatments from other listed interventions.
