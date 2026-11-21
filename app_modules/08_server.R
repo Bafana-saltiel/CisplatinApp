@@ -2,7 +2,6 @@ server <- function(input, output, session) {
   measured_ids <- unique(Measured_Monotherapy$CompoundID)
   drug_choices <- Third_Drug_Choices[Third_Drug_Choices %in% measured_ids]
   updateSelectizeInput(session, "candidates", choices = drug_choices, server = TRUE)
-  updateSelectInput(session, "mono_drug", choices = drug_choices, selected = "DPC-001793")
 
   annotate <- function(rows) {
     rows <- left_join(rows, select(Cervix_Model, ModelID, CellLineName), by = "ModelID")
@@ -256,14 +255,34 @@ server <- function(input, output, session) {
   })
 
   monotherapy <- reactive({
-    req(input$mono_drug)
-    annotate(filter(Measured_Monotherapy, CompoundID == input$mono_drug))
+    pairs <- top_monotherapy() %>%
+      select(ModelID, CompoundID, Panel, Label)
+    Measured_Monotherapy %>%
+      inner_join(pairs, by = c("ModelID", "CompoundID")) %>%
+      mutate(InhibitionPct = 100 * (1 - ViabilityFraction)) %>%
+      arrange(Panel, Label, CompoundID, DoseUM) %>%
+      select(CellLineName = Panel, CompoundName = Label, everything())
   })
-  output$measurements <- renderDT(datatable(monotherapy(), rownames = FALSE))
+  output$measurements <- renderDT(datatable(monotherapy(), rownames = FALSE,
+                                            options = list(scrollX = TRUE)))
   output$measured_plot <- renderPlot({
-    ggplot(monotherapy(), aes(DoseUM, 100 * ViabilityFraction, colour = CellLineName)) +
-      geom_point() + scale_x_log10() + theme_minimal() +
-      labs(x = "Measured concentration (µM)", y = "Vehicle-relative viability (%)", colour = "Model")
+    rows <- monotherapy()
+    line_rows <- rows %>% group_by(ModelID, CompoundID) %>% filter(n() > 1L) %>% ungroup()
+    ggplot(rows, aes(DoseUM, InhibitionPct, colour = CompoundName,
+                     group = interaction(ModelID, CompoundID))) +
+      geom_hline(yintercept = 0, colour = "grey70", linewidth = 0.3) +
+      geom_line(data = line_rows, linewidth = 0.55) +
+      geom_point(size = 1.4) +
+      facet_wrap(vars(CellLineName), ncol = 4) +
+      scale_x_log10() +
+      labs(title = "Third-drug monotherapy dose–response profiles",
+           subtitle = "Top ten monotherapy candidates per model at all available measured doses",
+           x = "Measured concentration (µM)", y = "Measured monotherapy inhibition (%)",
+           colour = "Third drug") +
+      theme_bw(base_size = 11) +
+      theme(legend.position = "bottom")
+  }, height = function() {
+    max(360, 170 + 230 * ceiling(n_distinct(monotherapy()$ModelID) / 4))
   })
   output$audit_summary <- renderDT({
     rows <- Monotherapy_Fit_Audit %>%

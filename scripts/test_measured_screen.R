@@ -23,7 +23,7 @@ stopifnot(isTRUE(all.equal(
 shiny::testServer(server, {
   session$setInputs(combo = "Cisplatin_Paclitaxel", candidate_mode = "selected",
                     candidates = "DPC-001165", doses = c("0.03", "0.1"),
-                    mono_drug = "DPC-001793", run = 1)
+                    run = 1)
   data <- result()
   stopifnot(
     nrow(data$reference) == 13L,
@@ -35,6 +35,8 @@ shiny::testServer(server, {
   )
   invisible(output$ranking)
   invisible(output$reference)
+  stopifnot(all(monotherapy()$CompoundID == "DPC-001165"),
+            nchar(output$measured_plot$src) > 1000)
   invisible(output$measurements)
   invisible(output$audit_summary)
   invisible(output$trials)
