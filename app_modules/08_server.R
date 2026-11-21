@@ -105,6 +105,97 @@ server <- function(input, output, session) {
     datatable(rows, rownames = FALSE)
   })
   output$reference_doses <- renderDT(datatable(result()$reference_doses, rownames = FALSE))
+  target_gene_rows <- function(score, evidence_class) {
+    rows <- ranked_target_context()
+    validate(need(nrow(rows), "No target context is available for this screen."))
+    rows <- rows %>%
+      filter(!is.na(TargetGene), is.finite(.data[[score]])) %>%
+      distinct(ModelID, CellLineName, TargetGene, .data[[score]], .data[[evidence_class]]) %>%
+      mutate(Panel = coalesce(CellLineName, ModelID)) %>%
+      arrange(Panel, desc(.data[[score]]), TargetGene) %>%
+      mutate(Tick = factor(rev(row_number())))
+    validate(need(nrow(rows), "No measurements are available for the ranked candidate targets."))
+    rows
+  }
+
+  render_target_gene_plot <- function(score, evidence_class, title, subtitle, axis, palette,
+                                      ncol, thresholds = numeric()) {
+    renderPlot({
+      rows <- target_gene_rows(score, evidence_class)
+      plot <- ggplot(rows, aes(.data[[score]], Tick, fill = .data[[evidence_class]])) +
+        geom_col(orientation = "y") +
+        facet_wrap(vars(Panel), ncol = ncol, scales = "free_y") +
+        scale_y_discrete(labels = setNames(rows$TargetGene, as.character(rows$Tick))) +
+        scale_fill_manual(values = palette) +
+        labs(title = title, subtitle = subtitle, x = axis, y = "Target gene",
+             fill = if (length(thresholds)) "Dependency class" else "Expression class") +
+        theme_bw(base_size = 11) +
+        theme(axis.text.y = element_text(size = 8), legend.position = "bottom")
+      if (length(thresholds)) {
+        plot <- plot +
+          geom_vline(xintercept = thresholds[1], linetype = "dashed") +
+          geom_vline(xintercept = thresholds[2], linetype = "dotted") +
+          scale_x_continuous(breaks = seq(0, 1, .25)) +
+          coord_cartesian(xlim = c(0, 1))
+      }
+      plot
+    }, height = function() {
+      counts <- as.integer(table(target_gene_rows(score, evidence_class)$Panel))
+      facet_rows <- split(counts, ceiling(seq_along(counts) / ncol))
+      110 + sum(vapply(facet_rows, function(x) max(150, 45 + 14 * max(x)), numeric(1)))
+    })
+  }
+
+  output$target_crispr_plot <- render_target_gene_plot(
+    "CRISPR_Dependency", "DependencyClass",
+    "Functional evidence: CRISPR dependency of third-drug targets",
+    "Dashed: moderate cutoff (0.50). Dotted: strong cutoff (0.80).",
+    "CRISPR dependency probability",
+    c("Moderate dependency" = "#F8766D", "Strong dependency" = "#00BA38",
+      "Weak dependency" = "#619CFF", "Not dependent" = "#999999"),
+    ncol = 3, thresholds = c(.5, .8)
+  )
+
+  output$target_expression_plot <- render_target_gene_plot(
+    "Expression_log2TPM", "ExpressionClass",
+    "Molecular evidence: target expression in matched cervical models",
+    "Expression classes use target-specific percentiles.",
+    "log2(TPM + 1)",
+    c("High expression" = "#F8766D", "Low expression" = "#00BA38",
+      "Moderate expression" = "#619CFF", "Not available" = "#999999"),
+    ncol = 4
+  )
+
+  output$target_mutation_plot <- renderPlot({
+    rows <- ranked_target_context()
+    validate(need(nrow(rows), "No target context is available for this screen."))
+    counts <- rows %>%
+      distinct(ModelID, CellLineName, ThirdDrugCompoundID, TargetGene, MutationStatus) %>%
+      mutate(
+        Panel = coalesce(CellLineName, ModelID),
+        Status = case_when(
+          MutationStatus == "Mutated" ~ "Mutated",
+          MutationStatus == "No target annotation" ~ "No target annotation",
+          MutationStatus == "No recorded mutation" ~ "No recorded mutation",
+          TRUE ~ "Mutation data unavailable"
+        ),
+        Status = factor(Status, levels = c("Mutated", "No target annotation",
+                                           "Mutation data unavailable", "No recorded mutation"))
+      ) %>%
+      count(Panel, Status)
+    ggplot(counts, aes(n, Panel, fill = Status)) +
+      geom_col(orientation = "y") +
+      scale_fill_manual(values = c("Mutated" = "#F8766D", "No target annotation" = "#00BA38",
+                                   "No recorded mutation" = "#619CFF",
+                                   "Mutation data unavailable" = "#999999")) +
+      labs(title = "Somatic mutation context for candidate drug targets",
+           x = "Drug–target associations or unannotated candidates",
+           y = "Cervical cancer model", fill = "Mutation status") +
+      theme_bw(base_size = 11)
+  }, height = function() {
+    max(350, 110 + 34 * n_distinct(ranked_target_context()$ModelID))
+  })
+
   output$target_context <- renderDT({
     datatable(ranked_target_context(), rownames = FALSE, options = list(scrollX = TRUE))
   })

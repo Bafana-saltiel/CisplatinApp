@@ -40,7 +40,12 @@ ui <- fluidPage(
         tabPanel("Trial registry", p("Registry arms can include other interventions and schedules. Review the linked records for full details."), DTOutput("trials")),
         tabPanel("Target context",
                  p("Annotations for the ten largest expected increments per model, with optional DepMap gene dependency, RNA and mutation data. These annotations describe candidate targets."),
-                 DTOutput("target_context")),
+                 tabsetPanel(
+                   tabPanel("CRISPR dependency", plotOutput("target_crispr_plot", height = "auto")),
+                   tabPanel("RNA expression", plotOutput("target_expression_plot", height = "auto")),
+                   tabPanel("Somatic mutations", plotOutput("target_mutation_plot", height = "auto")),
+                   tabPanel("Evidence table", DTOutput("target_context"))
+                 )),
         tabPanel("Measured monotherapy",
                  plotOutput("top_monotherapy_plot", height = "auto"),
                  h4("Measured viability by concentration"),
