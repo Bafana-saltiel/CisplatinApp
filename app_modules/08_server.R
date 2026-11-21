@@ -23,7 +23,8 @@ server <- function(input, output, session) {
                          selected = input$candidates)
     validate(need(length(candidates), "Select at least one candidate compound."))
     doses <- sort(as.numeric(input$doses))
-    result <- run_measured_screen(regimen$CompoundIDs[[1]], candidates, doses)
+    result <- run_measured_screen(regimen$CompoundIDs[[1]], candidates, doses,
+                                  include_hsa = isTRUE(input$include_hsa))
     for (table in names(result)) {
       result[[table]] <- annotate(result[[table]]) %>%
         mutate(ReferenceRegimen = input$combo, CandidateGridUM = paste(doses, collapse = "|"))
@@ -31,6 +32,11 @@ server <- function(input, output, session) {
     result
   })
 
+  output$hsa_note <- renderUI({
+    if ("HSAExpectedIncrementPP" %in% names(result()$ranking)) {
+      p("HSA averages the strongest single-agent inhibition at each dose combination. The HSA increment compares the expanded and reference HSA expectations in percentage points. Candidate ranking uses Bliss.")
+    }
+  })
   output$ranking <- renderDT({
     rows <- result()$ranking
     validate(need(nrow(rows), "No model has measurements for the full reference and candidate dose grid. See Dose coverage."))

@@ -43,7 +43,7 @@ estimate_at_doses <- function(measurements, doses) {
 }
 
 run_measured_screen <- function(reference_ids, candidate_ids, doses,
-                                measurements = Measured_Monotherapy) {
+                                measurements = Measured_Monotherapy, include_hsa = FALSE) {
   doses <- sort(unique(as.numeric(doses)))
   stopifnot(length(doses) > 0L, all(is.finite(doses) & doses > 0),
             length(reference_ids) >= 2L, !anyDuplicated(reference_ids))
@@ -97,6 +97,37 @@ run_measured_screen <- function(reference_ids, candidate_ids, doses,
            ReferenceBlissExpectedInhibitionPct, ExpandedBlissExpectedInhibitionPct,
            BlissExpectedIncrementPP) %>%
     arrange(ModelID, desc(BlissExpectedIncrementPP), CompoundID)
+
+  if (include_hsa) {
+    # HSA takes the best single-agent inhibition at each dose tuple.
+    # In viability units this is the minimum across component drugs.
+    hsa_reference <- reference_doses %>%
+      semi_join(reference, by = "ModelID") %>%
+      group_by(ModelID) %>%
+      summarise(
+        BestViability = list(Reduce(
+          function(left, right) as.vector(outer(left, right, pmin)),
+          split(pmax(0, pmin(1, ViabilityFraction)), CompoundID)
+        )),
+        .groups = "drop"
+      ) %>%
+      mutate(ReferenceHSAExpectedInhibitionPct = map_dbl(BestViability, ~ 100 * (1 - mean(.x))))
+
+    hsa_candidates <- complete %>%
+      select(ModelID, CompoundID, DoseValues) %>%
+      inner_join(hsa_reference, by = "ModelID") %>%
+      mutate(
+        ExpandedHSAExpectedInhibitionPct = map2_dbl(
+          BestViability, DoseValues,
+          ~ 100 * (1 - mean(outer(.x, pmax(0, pmin(1, .y)), pmin)))
+        ),
+        HSAExpectedIncrementPP = ExpandedHSAExpectedInhibitionPct - ReferenceHSAExpectedInhibitionPct
+      ) %>%
+      select(-BestViability, -DoseValues)
+
+    reference <- left_join(reference, select(hsa_reference, -BestViability), by = "ModelID")
+    ranking <- left_join(ranking, hsa_candidates, by = c("ModelID", "CompoundID"))
+  }
 
   list(reference = select(reference, -ReferenceBlissViability),
        ranking = ranking, coverage = select(by_drug, -DoseValues),

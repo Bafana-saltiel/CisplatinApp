@@ -17,6 +17,7 @@ ui <- fluidPage(
                          choices = c(0.01, 0.03, 0.1, 0.3, 1),
                          selected = c(0.03, 0.1)),
       helpText("Reference drugs use their measured concentrations. Candidates share the selected grid, with log-dose interpolation inside the measured range."),
+      checkboxInput("include_hsa", "Include Highest Single Agent (HSA) benchmark", value = FALSE),
       actionButton("run", "Calculate expectations", class = "btn-primary"),
       br(), br(),
       downloadButton("download_ranking", "Download expected increments"),
@@ -27,6 +28,7 @@ ui <- fluidPage(
       tabsetPanel(
         tabPanel("Expected increments",
                  p("Within each model on the common grid, the expected increment ranks drugs by their single-agent inhibition after bounding viability to [0, 1]."),
+                 uiOutput("hsa_note"),
                  DTOutput("ranking")),
         tabPanel("Top candidates by model",
                  div(style = "overflow-x: auto;",
