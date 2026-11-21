@@ -23,7 +23,9 @@ server <- function(input, output, session) {
     validate(need(length(candidates), "Select at least one candidate compound."))
     doses <- sort(as.numeric(input$doses))
     result <- run_measured_screen(regimen$CompoundIDs[[1]], candidates, doses,
-                                  include_hsa = isTRUE(input$include_hsa))
+                                  include_hsa = isTRUE(input$include_hsa),
+                                  include_loewe = isTRUE(input$include_loewe),
+                                  include_zip = isTRUE(input$include_zip))
     for (table in names(result)) {
       result[[table]] <- annotate(result[[table]]) %>%
         mutate(ReferenceRegimen = input$combo, CandidateGridUM = paste(doses, collapse = "|"))
@@ -32,9 +34,15 @@ server <- function(input, output, session) {
   })
 
   output$hsa_note <- renderUI({
-    if ("HSAExpectedIncrementPP" %in% names(result()$ranking)) {
-      p("HSA averages the strongest single-agent inhibition at each dose combination. The HSA increment compares the expanded and reference HSA expectations in percentage points. Candidate ranking uses Bliss.")
-    }
+    metrics <- names(result()$ranking)
+    tagList(
+      if ("HSAExpectedIncrementPP" %in% metrics)
+        p("HSA averages the strongest single-agent inhibition at each dose combination. Candidate ranking uses Bliss."),
+      if ("LoeweExpectedIncrementPP" %in% metrics)
+        p("Loewe increments use matched dose tuples where both expectations are defined within the fitted monotherapy effect ranges. Coverage is the fraction of tuples used."),
+      if ("ZIPExpectedIncrementPP" %in% metrics)
+        p("ZIP expectation combines fitted single-agent responses under zero potency shift. ZIP synergy requires measured combination responses.")
+    )
   })
   output$ranking <- renderDT({
     rows <- result()$ranking

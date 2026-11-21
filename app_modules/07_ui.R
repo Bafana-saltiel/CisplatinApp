@@ -18,6 +18,8 @@ ui <- fluidPage(
                          selected = c(0.03, 0.1)),
       helpText("Reference drugs use their measured concentrations. Candidates share the selected grid, with log-dose interpolation inside the measured range."),
       checkboxInput("include_hsa", "Include Highest Single Agent (HSA) benchmark", value = FALSE),
+      checkboxInput("include_loewe", "Include Loewe additivity expectation", value = FALSE),
+      checkboxInput("include_zip", "Include ZIP no-potency-shift expectation", value = FALSE),
       actionButton("run", "Calculate expectations", class = "btn-primary"),
       br(), br(),
       downloadButton("download_ranking", "Download expected increments"),
