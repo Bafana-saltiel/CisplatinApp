@@ -2554,13 +2554,13 @@
   },
   "files": {
     "README.md": {
-      "checksum": "87bc52a5a04d5e3a66539a049df9f958"
+      "checksum": "e733d5bf1ba80d57552e5f6700563990"
     },
     "VEGF_compounds_screened_in_cervical_GDSC2.csv": {
       "checksum": "701da9d405cad8ccad6178fff6d46e63"
     },
     "app.R": {
-      "checksum": "f4a9f2844c8e3c939af36fa3a240cbb2"
+      "checksum": "ba5b78bf6c3e37609a6bda7659f346bc"
     },
     "app_modules/00_packages.R": {
       "checksum": "66db2b85a97b6e197d529692739add5a"
@@ -2572,19 +2572,19 @@
       "checksum": "87a179b6faccd6639c064181eb57acdc"
     },
     "app_modules/03_pharmacology.R": {
-      "checksum": "9eac8b63bfbaf622dabca30e3e2b1b51"
+      "checksum": "7d6e5a58213980207d9dec9a36739d22"
     },
     "app_modules/04_compounds.R": {
-      "checksum": "be43b3651505c20a2049015b1cbf3c54"
+      "checksum": "173f87e9421887b7ae6f430c3e0a3f1a"
     },
     "app_modules/05_validation.R": {
-      "checksum": "52664e4f03cb30370d0cecf4c58a8ec0"
+      "checksum": "3954dd06a015b854aebaf8e228e3e7ff"
     },
     "app_modules/07_ui.R": {
-      "checksum": "93214e780a8f41eed680b03aaaea9957"
+      "checksum": "a538619432e9078936f4ff8b92720e07"
     },
     "app_modules/08_server.R": {
-      "checksum": "3c1712b8434d4eeb187a7bdd1215e9d1"
+      "checksum": "c97a068bf2b12f882fceffe0adea890b"
     },
     "app_modules/10_cohort_validation.R": {
       "checksum": "baf1b183a258b3f6c7285d377c434a30"
@@ -2623,7 +2623,7 @@
       "checksum": "5097ed7eb83cd1cc06f7fee3e117b220"
     },
     "data/input-provenance.csv": {
-      "checksum": "6a02c2f65118e875403d7f9ee40fadbc"
+      "checksum": "d9236599789dd34cf5bd16cf6516c924"
     },
     "data/sanger-fit-audit-summary.json": {
       "checksum": "24f70346a6e59911e566afb7f2c4d96e"
@@ -2635,7 +2635,7 @@
       "checksum": "cbd3001c64047cf86b83542c39a7b027"
     },
     "scripts/prepare_sanger_viability.py": {
-      "checksum": "897ce30a8afdd537d167c140c1eb6b12"
+      "checksum": "7b4b3d4b175bb477e0822295aba63fab"
     },
     "scripts/refresh_trial_evidence.py": {
       "checksum": "8c04c5ce039579378fab622d11f3fe0a"
@@ -2644,7 +2644,7 @@
       "checksum": "856e20e3caf830ae49bd6246406cd139"
     },
     "scripts/test_measured_screen.R": {
-      "checksum": "1ee49696038b4d405aa81b2817f2f8ed"
+      "checksum": "f227008d4618c283f7708e82fdc68396"
     },
     "data/cross-scc-expression-sources.md": {
       "checksum": "6622493a578896a4c0c3b5b06194f4e6"
@@ -2702,6 +2702,18 @@
     },
     "data/ReactomePathways_v98.gmt": {
       "checksum": "5c80cf46ea1b3481c030e1c16010b848"
+    },
+    "app_modules/06_combination_benchmark.R": {
+      "checksum": "cf51b8a72bbd411e13e946d941c0952d"
+    },
+    "data/ALMANAC_ovarian_cisplatin_paclitaxel.csv": {
+      "checksum": "72f86c81c8cf06b2b30804300a6b3748"
+    },
+    "data/GDSC2MeasuredViability_Ovary.csv": {
+      "checksum": "95e875cc065ce219124972b1caa14e77"
+    },
+    "scripts/prepare_almanac_benchmark.py": {
+      "checksum": "14070b236ec72251033eee47c966c90a"
     }
   },
   "users": null

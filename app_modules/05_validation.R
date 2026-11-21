@@ -134,6 +134,15 @@ get_target_mutation <- function(model_id, target_gene) {
     ))
   }
 
+  if (!model_id %in% Cervix_Model$ModelID) {
+    return(tibble(
+      MutationStatus = "Mutation data unavailable",
+      MutationCount = NA_integer_,
+      VariantClassification = NA_character_,
+      ProteinChange = NA_character_
+    ))
+  }
+
   hits <- Mutation_MAF %>%
     filter(
       .data[[mutation_model_col]] == model_id,

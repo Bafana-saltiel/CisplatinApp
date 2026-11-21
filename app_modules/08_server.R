@@ -1,10 +1,16 @@
 server <- function(input, output, session) {
-  measured_ids <- unique(Measured_Monotherapy$CompoundID)
-  drug_choices <- Third_Drug_Choices[Third_Drug_Choices %in% measured_ids]
-  updateSelectizeInput(session, "candidates", choices = drug_choices, server = TRUE)
+  combination_benchmark_server(input, output, session)
+  measurements <- reactive({
+    if (identical(input$cancer_type, "Ovary")) Ovarian_Monotherapy else Measured_Monotherapy
+  })
+  observe({
+    choices <- Third_Drug_Choices[Third_Drug_Choices %in% measurements()$CompoundID]
+    updateSelectizeInput(session, "candidates", choices = choices,
+                         selected = intersect(isolate(input$candidates), choices), server = TRUE)
+  })
 
   annotate <- function(rows) {
-    rows <- left_join(rows, select(Cervix_Model, ModelID, CellLineName), by = "ModelID")
+    rows <- left_join(rows, select(Model, ModelID, CellLineName), by = "ModelID")
     if ("CompoundID" %in% names(rows)) {
       rows <- left_join(rows, distinct(select(Available_Third_Drugs, CompoundID, CompoundName)),
                         by = "CompoundID")
@@ -16,19 +22,22 @@ server <- function(input, output, session) {
     validate(need(length(input$doses), "Choose at least one dose."))
     regimen <- filter(Clinical_Cisplatin_Combinations_Final, ClinicalCombination == input$combo)
     req(nrow(regimen) == 1L)
+    measured_ids <- unique(measurements()$CompoundID)
     candidates <- switch(input$candidate_mode,
-                         antiangiogenic = Cervical_Antiangiogenic_Compounds$CompoundID,
+                         antiangiogenic = intersect(Antiangiogenic_Compounds$CompoundID, measured_ids),
                          all = measured_ids,
-                         selected = input$candidates)
+                         selected = intersect(input$candidates, measured_ids))
     validate(need(length(candidates), "Select at least one candidate compound."))
     doses <- sort(as.numeric(input$doses))
     result <- run_measured_screen(regimen$CompoundIDs[[1]], candidates, doses,
+                                  measurements = measurements(),
                                   include_hsa = isTRUE(input$include_hsa),
                                   include_loewe = isTRUE(input$include_loewe),
                                   include_zip = isTRUE(input$include_zip))
     for (table in names(result)) {
       result[[table]] <- annotate(result[[table]]) %>%
-        mutate(ReferenceRegimen = input$combo, CandidateGridUM = paste(doses, collapse = "|"))
+        mutate(CancerType = if (identical(input$cancer_type, "Ovary")) "Ovary" else "Cervix",
+               ReferenceRegimen = input$combo, CandidateGridUM = paste(doses, collapse = "|"))
     }
     result
   })
@@ -219,7 +228,7 @@ server <- function(input, output, session) {
 
   output$target_expression_plot <- render_target_gene_plot(
     "Expression_log2TPM", "ExpressionClass",
-    "Molecular evidence: target expression in matched cervical models",
+    "Molecular evidence: target expression in matched models",
     "Expression classes use target-specific percentiles.",
     "log2(TPM + 1)",
     c("High expression" = "#F8766D", "Low expression" = "#00BA38",
@@ -251,7 +260,7 @@ server <- function(input, output, session) {
                                    "Mutation data unavailable" = "#999999")) +
       labs(title = "Somatic mutation context for candidate drug targets",
            x = "Drug–target associations or unannotated candidates",
-           y = "Cervical cancer model", fill = "Mutation status") +
+           y = "Cancer model", fill = "Mutation status") +
       theme_bw(base_size = 11)
   }, height = function() {
     max(350, 110 + 34 * n_distinct(ranked_target_context()$ModelID))
@@ -304,7 +313,7 @@ server <- function(input, output, session) {
                                    "Low intrinsic response" = "#7CAE00",
                                    "Moderate intrinsic response" = "#00BFC4",
                                    "No positive inhibition" = "#C77CFF")) +
-      labs(title = "Top monotherapy responses in matched cervical models",
+      labs(title = "Top monotherapy responses in matched models",
            subtitle = paste0("Measured GDSC2 viability summarised on the candidate grid (µM) ",
                              gsub("|", ", ", rows$CandidateGridUM[[1]], fixed = TRUE)),
            x = "Mean single-agent inhibition (%)", y = "Candidate compound",
@@ -319,7 +328,7 @@ server <- function(input, output, session) {
   monotherapy <- reactive({
     pairs <- top_monotherapy() %>%
       select(ModelID, CompoundID, Panel, Label)
-    Measured_Monotherapy %>%
+    bind_rows(Measured_Monotherapy, Ovarian_Monotherapy) %>%
       inner_join(pairs, by = c("ModelID", "CompoundID")) %>%
       mutate(InhibitionPct = 100 * (1 - ViabilityFraction)) %>%
       arrange(Panel, Label, CompoundID, DoseUM) %>%

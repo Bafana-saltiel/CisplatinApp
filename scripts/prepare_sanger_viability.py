@@ -13,9 +13,9 @@ RAW_FILE = "GDSC2_public_raw_data_24Jul22.csv"
 RAW_BYTES = 2112924313
 
 
-def prepare(path, data_dir):
+def prepare(path, data_dir, lineage="Cervix"):
     models = pd.read_csv(data_dir / "Model.csv")
-    models = models.loc[models.OncotreeLineage.eq("Cervix"), ["SangerModelID", "ModelID"]].dropna()
+    models = models.loc[models.OncotreeLineage.eq({"Cervix": "Cervix", "Ovary": "Ovary/Fallopian Tube"}[lineage]), ["SangerModelID", "ModelID"]].dropna()
     curves = pd.read_csv(data_dir / "GDSC2ResponseCurves.csv")
     curves = curves[curves.ModelID.isin(models.ModelID)].copy()
     curves["DRUG_ID"] = curves.SampleID.str.extract(r"^GDSC2:(\d+)$").astype(int)
@@ -52,8 +52,8 @@ def prepare(path, data_dir):
         NWells=("NWells", "sum"),
     ).reset_index().rename(columns={"CONC": "DoseUM"})
     if observed.empty:
-        raise ValueError("No Sanger measurements matched the cervical model and GDSC2 drug IDs")
-    observed.to_csv(data_dir / "GDSC2MeasuredViability_Cervix.csv", index=False, float_format="%.12g")
+        raise ValueError("No Sanger measurements matched the selected lineage and GDSC2 drug IDs")
+    observed.to_csv(data_dir / f"GDSC2MeasuredViability_{lineage}.csv", index=False, float_format="%.12g")
     # The original equation is reproduced verbatim for the reviewer-requested audit.
     audit = observed.merge(curves, on=["ModelID", "CompoundID", "SampleID"], validate="many_to_one")
     audit = audit[(audit.DoseUnit == "uM") &
@@ -66,7 +66,7 @@ def prepare(path, data_dir):
             audit[label] = predicted
     audit_columns = ["ModelID", "CompoundID", "SampleID", "CompoundName", "DoseUM",
                      "ViabilityFraction", "NPlates", "NWells", "OriginalFit", "SlopeReorientedFit"]
-    audit[audit_columns].to_csv(data_dir / "GDSC2MonotherapyFitAudit_Cervix.csv", index=False,
+    audit[audit_columns].to_csv(data_dir / f"GDSC2MonotherapyFitAudit_{lineage}.csv", index=False,
                                float_format="%.12g")
     summary = {"matched_doses": len(audit), "models": int(audit.ModelID.nunique()),
                "model_compound_pairs": len(audit[["ModelID", "CompoundID"]].drop_duplicates()),
@@ -84,11 +84,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("raw_file", type=Path)
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
+    parser.add_argument("--lineage", choices=("Cervix", "Ovary"), default="Cervix")
     args = parser.parse_args()
     if args.raw_file.stat().st_size != RAW_BYTES:
         parser.error(f"Expected the complete {RAW_FILE} ({RAW_BYTES} bytes)")
     with args.raw_file.open("rb") as source:
         sha256 = hashlib.file_digest(source, "sha256").hexdigest()
-    summary = prepare(args.raw_file, args.data_dir)
+    summary = prepare(args.raw_file, args.data_dir, args.lineage)
     summary.update(source=SANGER_RELEASE + RAW_FILE, raw_sha256=sha256)
     print(json.dumps(summary, indent=2, allow_nan=False))

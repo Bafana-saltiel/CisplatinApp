@@ -25,6 +25,9 @@ read_measured_viability <- function(path) {
 Measured_Monotherapy <- read_measured_viability(
   file.path(DATA_DIR, "GDSC2MeasuredViability_Cervix.csv")
 )
+Ovarian_Monotherapy <- read_measured_viability(
+  file.path(DATA_DIR, "GDSC2MeasuredViability_Ovary.csv")
+)
 Monotherapy_Fit_Audit <- readr::read_csv(
   file.path(DATA_DIR, "GDSC2MonotherapyFitAudit_Cervix.csv"), show_col_types = FALSE
 )

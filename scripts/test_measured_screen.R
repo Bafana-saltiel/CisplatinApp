@@ -45,9 +45,30 @@ shiny::testServer(server, {
   stopifnot(file.exists(download), nrow(read_csv(download, show_col_types = FALSE)) == nrow(data$ranking))
 })
 reference_ids <- c("DPC-001793", "DPC-004880")
-antiangiogenic <- run_measured_screen(reference_ids, Cervical_Antiangiogenic_Compounds$CompoundID,
-                                      c(.03, .1))
+cervical_candidates <- intersect(Antiangiogenic_Compounds$CompoundID, Measured_Monotherapy$CompoundID)
+antiangiogenic <- run_measured_screen(reference_ids, cervical_candidates, c(.03, .1))
 unrestricted <- run_measured_screen(reference_ids, unique(Measured_Monotherapy$CompoundID),
                                     c(.03, .1))
 stopifnot(nrow(antiangiogenic$ranking) > 0L, nrow(unrestricted$ranking) == 3062L)
 cat("Measured-screen and Shiny server checks passed.\n")
+example <- read_combination_benchmark(benchmark_example)
+stopifnot(nrow(example) == 54L, dplyr::n_distinct(example$Model) == 6,
+          all(table(example$Model) == 9L), all(example$BlissExpected >= example$HSAExpected),
+          dplyr::n_distinct(Ovarian_Monotherapy$ModelID) == 41)
+upload <- tempfile(fileext = ".csv")
+writeLines(c(paste(benchmark_columns, collapse = ","), "Model1,run1,Drug1,Drug2,1,2,0.8,0.5,0.3"), upload)
+shiny::testServer(combination_benchmark_server, {
+  session$setInputs(benchmark_model = "OVCAR-4")
+  stopifnot(nrow(selected_model()) == 9L)
+  session$setInputs(benchmark_upload = list(datapath = upload), benchmark_model = "Model1")
+  stopifnot(isTRUE(all.equal(selected_model()$BlissDeviationPP, 10)),
+            isTRUE(all.equal(selected_model()$HSADeviationPP, 20)))
+  stopifnot(!is.null(output$benchmark_plot))
+})
+shiny::testServer(server, {
+  session$setInputs(cancer_type = "Ovary", combo = "Cisplatin_Paclitaxel",
+                    candidate_mode = "all", doses = c("0.03","0.1"), run = 1)
+  ovarian <- result()
+  stopifnot(nrow(ovarian$ranking) > 0, all(ovarian$ranking$CancerType == "Ovary"))
+  print(c(models = nrow(ovarian$reference), pairs = nrow(ovarian$ranking)))
+})

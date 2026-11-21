@@ -2,7 +2,10 @@
 # 5. AVAILABLE THIRD DRUGS AND ANTI-ANGIOGENIC SUBSET
 # ============================================================
 
-Available_Third_Drugs <- Cervix_GDSC_All %>%
+Available_Third_Drugs <- bind_rows(
+  Cervix_GDSC_All,
+  semi_join(GDSC2ResponseCurves, Ovarian_Monotherapy, by = c("ModelID", "CompoundID"))
+) %>%
   distinct(CompoundID, CompoundName) %>%
   left_join(
     PortalCompounds %>%
@@ -31,7 +34,7 @@ Third_Drug_Choices <- setNames(
 # Terms used to identify VEGF/VEGFR and broader angiogenesis-associated
 # compounds in the compound catalogue. The final subset is restricted to
 # compounds that have an actual GDSC2 response curve in at least one
-# cervical cancer model.
+# supported gynaecological model.
 Antiangiogenic_Search_Terms <- c(
   "bevacizumab",
   "avastin",
@@ -83,7 +86,7 @@ identify_matching_terms <- function(search_text, terms) {
   paste(unique(hits), collapse = "; ")
 }
 
-Cervical_Antiangiogenic_Compounds <- Available_Third_Drugs %>%
+Antiangiogenic_Compounds <- Available_Third_Drugs %>%
   rowwise() %>%
   mutate(
     AntiangiogenicSearchText = make_annotation_text(
@@ -104,18 +107,18 @@ Cervical_Antiangiogenic_Compounds <- Available_Third_Drugs %>%
   arrange(CompoundName)
 
 Antiangiogenic_Drug_Choices <- setNames(
-  Cervical_Antiangiogenic_Compounds$CompoundID,
+  Antiangiogenic_Compounds$CompoundID,
   paste0(
-    Cervical_Antiangiogenic_Compounds$CompoundName,
+    Antiangiogenic_Compounds$CompoundName,
     " [",
-    Cervical_Antiangiogenic_Compounds$CompoundID,
+    Antiangiogenic_Compounds$CompoundID,
     "]"
   )
 )
 
 message(
   "Identified ",
-  nrow(Cervical_Antiangiogenic_Compounds),
-  " anti-angiogenic compounds with cervical GDSC2 response data."
+  nrow(Antiangiogenic_Compounds),
+  " anti-angiogenic compounds with gynaecological GDSC2 response data."
 )
 

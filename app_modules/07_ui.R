@@ -4,6 +4,8 @@ ui <- fluidPage(
   p("Explore measured GDSC2 monotherapy and calculate Bliss independence expectations for clinically investigated regimens. Experimental combination viability is required to estimate synergy."),
   sidebarLayout(
     sidebarPanel(
+      selectInput("cancer_type", "Cancer type",
+                  choices = c("Cervical" = "Cervix", "Ovarian/fallopian tube" = "Ovary")),
       selectInput("combo", "Clinical reference regimen",
                   choices = Clinical_Cisplatin_Combinations_Final$ClinicalCombination,
                   selected = "Cisplatin_Paclitaxel"),
@@ -43,7 +45,8 @@ ui <- fluidPage(
         tabPanel("Reference expectation", DTOutput("reference"),
                  h4("Measured dose inputs"), DTOutput("reference_doses")),
         tabPanel("Dose coverage", DTOutput("coverage")),
-        tabPanel("Trial registry", p("Registry arms can include other interventions and schedules. Review the linked records for full details."), DTOutput("trials")),
+        combination_benchmark_ui(),
+        tabPanel("Trial registry", p("Registry evidence was curated for cervical cancer. Registry arms can include other interventions and schedules. Review the linked records for full details."), DTOutput("trials")),
         tabPanel("Target context",
                  p("Annotations for the ten largest expected increments per model, with optional DepMap gene dependency, RNA and mutation data. These annotations describe candidate targets."),
                  tabsetPanel(
@@ -56,7 +59,7 @@ ui <- fluidPage(
                  plotOutput("top_monotherapy_plot", height = "auto"),
                  plotOutput("measured_plot", height = "auto"), DTOutput("measurements")),
         tabPanel("Fit audit",
-                 p("Dose-matched comparison of the original equation and a slope-reoriented diagnostic against Sanger release 8.4 measurements."),
+                 p("Cervical model audit. Dose-matched comparison of the original equation and a slope-reoriented diagnostic against Sanger release 8.4 measurements."),
                  DTOutput("audit_summary"), DTOutput("audit_table")),
         tabPanel("Candidate cohort expression", candidate_cohort_ui()),
         tabPanel("Cross-SCC expression", cross_scc_validation_ui())
