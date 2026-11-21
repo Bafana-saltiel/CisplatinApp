@@ -4,6 +4,9 @@
   const button = document.getElementById("explain_trial_qwen");
   const status = document.getElementById("trial_qwen_status");
   const answer = document.getElementById("trial_qwen_answer");
+  const progressPanel = document.getElementById("trial_qwen_progress_panel");
+  const progressBar = document.getElementById("trial_qwen_progress");
+  const progressLabel = document.getElementById("trial_qwen_progress_label");
   let engine;
   let busy = false;
   let revision = 0;
@@ -11,12 +14,14 @@
   Shiny.addCustomMessageHandler("trial-qwen-reset", () => {
     revision += 1;
     answer.textContent = "";
+    progressPanel.hidden = true;
     status.textContent = busy ? "Finishing the previous request." : "";
   });
 
   Shiny.addCustomMessageHandler("trial-qwen-explain", async (facts) => {
     if (busy) return;
     answer.textContent = "";
+    progressPanel.hidden = true;
     if (!facts.arms) {
       status.textContent = "No matched registry arms are available for this regimen.";
       return;
@@ -31,19 +36,29 @@
     button.disabled = true;
     try {
       if (!engine) {
-        status.textContent = "Loading Qwen in your browser…";
+        progressPanel.hidden = false;
+        progressBar.removeAttribute("value");
+        progressLabel.textContent = "Starting…";
+        status.textContent = "Preparing the browser runtime.";
         const { CreateMLCEngine } = await import(webllmUrl);
+        if (current === revision) status.textContent = "Downloading or loading model files.";
         engine = await CreateMLCEngine(model, {
           initProgressCallback: ({ progress }) => {
-            if (current === revision && Number.isFinite(progress)) {
-              status.textContent = `Loading Qwen in your browser… ${Math.round(progress * 100)}%`;
-            }
+            if (current !== revision || !Number.isFinite(progress)) return;
+            const percent = Math.max(0, Math.min(100, Math.floor(progress * 100)));
+            progressBar.value = percent;
+            progressLabel.textContent = `${percent}%`;
+            if (percent === 100) status.textContent = "Initialising the model.";
           },
         });
       }
       if (current !== revision) return;
+      if (!progressPanel.hidden) {
+        progressBar.value = 100;
+        progressLabel.textContent = "100% · Model ready";
+      }
 
-      status.textContent = "Drafting an explanation…";
+      status.textContent = "Writing the explanation…";
       const response = await engine.chat.completions.create({
         messages: [
           { role: "system", content: [
@@ -73,6 +88,7 @@
       status.textContent = "Qwen draft. Check the counts and linked trial records in the registry summary.";
     } catch {
       if (current === revision) {
+        progressPanel.hidden = true;
         status.textContent = "Qwen could not run on this device. Use Summarise registry evidence for the local summary.";
       }
     } finally {

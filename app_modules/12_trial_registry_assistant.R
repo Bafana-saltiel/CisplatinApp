@@ -5,6 +5,13 @@ trial_registry_assistant_ui <- function() {
     uiOutput("trial_assistant_answer"),
     actionButton("explain_trial_qwen", "Explain with Qwen"),
     p("Optional. Qwen downloads on first use and runs in your WebGPU browser. The registry summary above works without it."),
+    tags$div(
+      id = "trial_qwen_progress_panel", hidden = NA,
+      tags$label("Qwen model download and loading", `for` = "trial_qwen_progress"),
+      tags$progress(id = "trial_qwen_progress", max = 100,
+                    style = "display: block; width: 100%; max-width: 28rem; height: 1.25rem;"),
+      tags$p(id = "trial_qwen_progress_label")
+    ),
     tags$p(id = "trial_qwen_status", role = "status"),
     tags$p(id = "trial_qwen_answer", style = "white-space: pre-wrap;"),
     tags$script(src = "trial-registry-qwen.js")
