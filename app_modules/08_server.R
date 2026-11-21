@@ -110,6 +110,39 @@ server <- function(input, output, session) {
   })
   output$coverage <- renderDT(datatable(result()$coverage, rownames = FALSE))
 
+  top_monotherapy <- reactive({
+    validate(need(input$run > 0, "Calculate expectations to see the top monotherapy responses."))
+    rows <- result()$ranking
+    validate(need(nrow(rows), "No eligible monotherapy responses on the selected dose grid."))
+    rows %>%
+      arrange(CellLineName, ModelID, desc(MeanSingleAgentInhibitionPct), CompoundID) %>%
+      group_by(ModelID) %>%
+      slice_head(n = 10L) %>%
+      ungroup() %>%
+      mutate(Panel = coalesce(CellLineName, ModelID),
+             Tick = factor(rev(seq_len(n()))),
+             Label = coalesce(CompoundName, CompoundID))
+  })
+
+  output$top_monotherapy_plot <- renderPlot({
+    rows <- top_monotherapy()
+    labels <- setNames(rows$Label, as.character(rows$Tick))
+    ggplot(rows, aes(MeanSingleAgentInhibitionPct, Tick)) +
+      geom_col(fill = "#F8766D", width = 0.9, orientation = "y") +
+      facet_wrap(vars(Panel), ncol = 4, scales = "free_y") +
+      scale_y_discrete(labels = labels) +
+      scale_x_continuous(breaks = seq(0, 100, 25)) +
+      coord_cartesian(xlim = c(0, 100)) +
+      labs(title = "Top monotherapy responses in matched cervical models",
+           subtitle = paste0("Measured GDSC2 viability summarised on the candidate grid (µM) ",
+                             gsub("|", ", ", rows$CandidateGridUM[[1]], fixed = TRUE)),
+           x = "Mean single-agent inhibition (%)", y = "Candidate compound") +
+      theme_bw(base_size = 11) +
+      theme(axis.text.y = element_text(size = 8))
+  }, height = function() {
+    max(360, 110 + 245 * ceiling(n_distinct(top_monotherapy()$ModelID) / 4))
+  })
+
   monotherapy <- reactive({
     req(input$mono_drug)
     annotate(filter(Measured_Monotherapy, CompoundID == input$mono_drug))

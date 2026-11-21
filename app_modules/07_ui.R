@@ -40,6 +40,8 @@ ui <- fluidPage(
                  p("Annotations for the ten largest expected increments per model, with optional DepMap gene dependency, RNA and mutation data. These annotations describe candidate targets."),
                  DTOutput("target_context")),
         tabPanel("Measured monotherapy",
+                 plotOutput("top_monotherapy_plot", height = "auto"),
+                 h4("Measured viability by concentration"),
                  selectInput("mono_drug", "Compound", choices = NULL),
                  plotOutput("measured_plot"), DTOutput("measurements")),
         tabPanel("Fit audit",
