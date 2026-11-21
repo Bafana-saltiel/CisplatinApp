@@ -2554,10 +2554,10 @@
   },
   "files": {
     "www/trial-registry-qwen.js": {
-      "checksum": "a56cef9cf2716aa2fbd483be839db10e"
+      "checksum": "e2bd3ced1522f9e94e3a33116d724b6a"
     },
     "app_modules/12_trial_registry_assistant.R": {
-      "checksum": "f7ae47d4029193ffa44fa787bfaa72c6"
+      "checksum": "4163d19ecd3b51cf2c35fda3dbd2abb1"
     },
     "data/melanoma_triplet_example.csv": {
       "checksum": "a187fbc823dd0fe590c37403a6c03da4"

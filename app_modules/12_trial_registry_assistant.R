@@ -16,8 +16,8 @@ trial_registry_assistant_ui <- function() {
       tags$p(id = "trial_qwen_progress_label")
     ),
     tags$p("Preparing the Qwen controls…", id = "trial_qwen_status", role = "status"),
-    tags$p(id = "trial_qwen_answer", style = "white-space: pre-wrap;"),
-    tags$script(src = "trial-registry-qwen.js?v=2", defer = NA)
+    tags$div(id = "trial_qwen_answer", style = "white-space: pre-wrap;"),
+    tags$script(src = "trial-registry-qwen.js?v=3", defer = NA)
   )
 }
 
