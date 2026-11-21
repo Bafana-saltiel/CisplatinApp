@@ -381,8 +381,28 @@ server <- function(input, output, session) {
     req(input$network_model)
     filter(top_candidates(), ModelID == input$network_model)
   }, "The graph connects adjacent candidate ranks within each enabled expectation method. Edges do not establish biological interactions.")
-  qwen_panel_server(output, "candidates", "Top candidates by model", top_candidates,
-                    "Candidates are shortlisted by expected Bliss increment within each model.")
+  qwen_candidate_evidence <- reactive({
+    top_candidates() %>%
+      group_by(ModelID) %>%
+      mutate(Rank = row_number()) %>%
+      ungroup() %>%
+      transmute(Model = coalesce(CellLineName, ModelID), Rank,
+                Candidate = coalesce(CompoundName, CompoundID),
+                `Candidate doses (µM)` = gsub("|", ", ", CandidateGridUM, fixed = TRUE),
+                `Reference expected inhibition (%)` = round(ReferenceBlissExpectedInhibitionPct, 3),
+                `Expanded expected inhibition (%)` = round(ExpandedBlissExpectedInhibitionPct, 3),
+                `Expected increment (pp)` = round(BlissExpectedIncrementPP, 3))
+  })
+  output$qwen_candidate_table <- renderDT({
+    datatable(qwen_candidate_evidence(), rownames = FALSE, selection = "multiple",
+              options = list(pageLength = 5, scrollX = TRUE))
+  })
+  qwen_panel_server(output, "candidates", "Top candidates by model", function() {
+    indices <- input$qwen_candidate_table_rows_selected
+    validate(need(length(indices) %in% 1:5, "Select one to five rows in the candidate table below."))
+    qwen_candidate_evidence()[indices, , drop = FALSE]
+  }, "Explain only the selected candidate rows. Rank is within the model by expected Bliss increment. These are modelled expectations from measured monotherapy.",
+  selected_rows = TRUE)
   qwen_panel_server(output, "reference", "Reference expectation", function() result()$reference,
                     "The reference is an expectation based on monotherapy data and is not a measured doublet.")
   qwen_panel_server(output, "coverage", "Dose coverage", function() {

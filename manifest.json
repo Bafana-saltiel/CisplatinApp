@@ -2554,10 +2554,10 @@
   },
   "files": {
     "www/trial-registry-qwen.js": {
-      "checksum": "939ec72aa576bffdc4611b56f420e4d3"
+      "checksum": "fd31e820db49552974d64b2909c04cb7"
     },
     "app_modules/12_trial_registry_assistant.R": {
-      "checksum": "38f47f80fe66576726e1ee930d7853f0"
+      "checksum": "b6040d41aac253986e781d8540928b51"
     },
     "data/melanoma_triplet_example.csv": {
       "checksum": "a187fbc823dd0fe590c37403a6c03da4"
@@ -2590,10 +2590,10 @@
       "checksum": "3954dd06a015b854aebaf8e228e3e7ff"
     },
     "app_modules/07_ui.R": {
-      "checksum": "65a151bb8dabb3779337a94931002b6d"
+      "checksum": "b2099965214660cd08f3053e16f6aa32"
     },
     "app_modules/08_server.R": {
-      "checksum": "c86026671191b7003be68acd226cbc7c"
+      "checksum": "a2947cf10c629edc19dd357ed5695582"
     },
     "app_modules/10_cohort_validation.R": {
       "checksum": "1b23b0bae5e5edcd3e89b022a27b443e"
@@ -2713,7 +2713,7 @@
       "checksum": "5c80cf46ea1b3481c030e1c16010b848"
     },
     "app_modules/06_combination_benchmark.R": {
-      "checksum": "74d8b8e597620a409ee852c88d0d2aab"
+      "checksum": "7cf7f0e6b15676520b069daabb41aba0"
     },
     "data/ALMANAC_ovarian_cisplatin_paclitaxel.csv": {
       "checksum": "72f86c81c8cf06b2b30804300a6b3748"

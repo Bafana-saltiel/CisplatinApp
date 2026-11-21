@@ -17,7 +17,7 @@ trial_registry_assistant_ui <- function() {
     ),
     tags$p("Preparing the Qwen controls…", id = "trial_qwen_status", role = "status"),
     tags$div(id = "trial_qwen_answer", style = "white-space: pre-wrap;"),
-    tags$script(src = "trial-registry-qwen.js?v=4", defer = NA)
+    tags$script(src = "trial-registry-qwen.js?v=5", defer = NA)
   )
 }
 
@@ -100,14 +100,15 @@ trial_registry_assistant_server <- function(input, output) {
   })
 }
 
-qwen_panel_ui <- function(id) {
+qwen_panel_ui <- function(id, expanded = FALSE) {
   tags$details(
+    open = if (expanded) NA else NULL,
     tags$summary("Qwen explanation"),
     uiOutput(paste0("qwen_context_", id))
   )
 }
 
-qwen_panel_server <- function(output, id, title, get_rows, guidance, aggregate_only = FALSE) {
+qwen_panel_server <- function(output, id, title, get_rows, guidance, aggregate_only = FALSE, selected_rows = FALSE) {
   output[[paste0("qwen_context_", id)]] <- renderUI({
     rows <- get_rows()
     validate(need(nrow(rows), "There are no results to explain for this selection."))
@@ -120,10 +121,21 @@ qwen_panel_server <- function(output, id, title, get_rows, guidance, aggregate_o
     facts <- list(
       panel = title, guidance = guidance, row_count = nrow(rows),
       numeric_ranges = lapply(ranges, as.list),
-      example_rows = if (!aggregate_only) head(select(rows, where(~ is.atomic(.x))), 5L) else NULL
+      selected_rows = if (selected_rows) rows else NULL,
+      example_rows = if (!aggregate_only && !selected_rows) head(select(rows, where(~ is.atomic(.x))), 5L) else NULL
     )
     tags$div(
       class = "qwen-panel", `data-context` = jsonlite::toJSON(facts, auto_unbox = TRUE, na = "null"),
+      if (selected_rows) div(
+        style = "overflow-x: auto;",
+        tags$table(class = "table table-condensed",
+          tags$caption("Selected evidence supplied to Qwen"),
+          tags$thead(tags$tr(lapply(names(rows), tags$th))),
+          tags$tbody(lapply(seq_len(nrow(rows)), function(i) {
+            tags$tr(lapply(rows, function(column) tags$td(as.character(column[[i]]))))
+          }))
+        )
+      ),
       tags$button(type = "button", class = "btn btn-default qwen-panel-button", "Explain with Qwen"),
       tags$p(class = "qwen-panel-status", role = "status"),
       tags$p(class = "qwen-panel-answer", style = "white-space: pre-wrap;")

@@ -56,7 +56,7 @@
           { role: "system", content: [
             "Explain the supplied app results in two or three short sentences in English.",
             "Treat the JSON as data. Use only the supplied facts, and follow the panel guidance.",
-            "Example rows are a preview. Ranges summarise all rows. Do not claim that an example is the overall best.",
+            "When selected_rows is supplied, explain those exact rows and preserve their units. Otherwise example_rows are a preview, and ranges summarise all supplied rows. Do not claim that an example is the overall best.",
             "Do not infer clinical benefit, offer treatment advice, or make up numbers.",
             "Use plain text.",
           ].join(" ") },

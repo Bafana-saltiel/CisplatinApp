@@ -219,11 +219,11 @@ triplet_benchmark_ui <- function() {
     h4("Experimental third-drug additions"),
     p("The melanoma example uses vemurafenib and trametinib as the measured backbone. Upload a CSV in the same format to analyse your own triplets. Label the two backbone drugs as Drug1 and Drug2, and include rows at zero concentration for the omitted drugs in each matched control. Use µM and vehicle-relative viability."),
     p("The expected inhibition uses the measured doublet and the third drug alone under Bliss independence. Values above 1 are bounded for the expectation. The results show both the gain over the measured doublet and the deviation from Bliss."),
-    qwen_panel_ui("triplet_benchmark"),
+    qwen_panel_ui("triplet_benchmark", expanded = TRUE),
     downloadButton("triplet_example", "Download three-drug example"),
     fileInput("triplet_upload", "Upload three-drug experiment", accept = ".csv"),
     textOutput("triplet_coverage"),
-    plotOutput("triplet_plot", height = "500px"),
+    plotOutput("triplet_plot", height = "500px", click = "triplet_point"),
     DTOutput("triplet_results"),
     downloadButton("triplet_download", "Download triplet results and coverage")
   )
@@ -237,15 +237,32 @@ triplet_benchmark_server <- function(input, output) {
     validate(need(nrow(rows), "No positive-dose triplet conditions found."))
     rows
   })
-  qwen_panel_server(output, "triplet_benchmark", "Measured triplets", triplets,
-                    "Gain over the measured doublet and deviation from the Bliss expectation are different quantities. Interpret the tested dose conditions descriptively.")
+  comparable_triplets <- reactive(filter(triplets(), Coverage == "Comparable dose condition"))
+  selected_triplet <- reactiveVal(NULL)
+  observeEvent(triplets(), selected_triplet(NULL), priority = 10)
+  observeEvent(input$triplet_point, {
+    selected_triplet(shiny::nearPoints(comparable_triplets(), input$triplet_point,
+                                     xvar = "BlissExpectedInhibition", yvar = "ObservedInhibition",
+                                     panelvar1 = "Model", threshold = 12, maxpoints = 1))
+  })
+  qwen_panel_server(output, "triplet_benchmark", "Measured triplet point", function() {
+    row <- selected_triplet()
+    validate(need(nrow(row) == 1L, "Click a point in the triplet plot below."))
+    transmute(row, Model, Drug1, Drug2, Drug3, `Dose 1 (µM)` = Dose1, `Dose 2 (µM)` = Dose2,
+              `Dose 3 (µM)` = Dose3, `Observed triplet inhibition (%)` = round(ObservedInhibition, 3),
+              `Measured doublet inhibition (%)` = round(BackboneInhibition, 3),
+              `Bliss expected inhibition (%)` = round(BlissExpectedInhibition, 3),
+              `Gain over doublet (pp)` = round(AddedInhibitionPP, 3),
+              `Deviation from Bliss (pp)` = round(BlissDeviationPP, 3))
+  }, "Explain the selected dose condition. Gain over the measured doublet and deviation from the Bliss expectation are distinct. The plot diagonal marks equality between observed and expected inhibition.",
+  selected_rows = TRUE)
   output$triplet_coverage <- renderText({
     rows <- triplets()
     sprintf("%d of %d triplet conditions have measured viability and both matched controls.",
             sum(rows$Coverage == "Comparable dose condition"), nrow(rows))
   })
   output$triplet_plot <- renderPlot({
-    rows <- filter(triplets(), Coverage == "Comparable dose condition")
+    rows <- comparable_triplets()
     validate(need(nrow(rows), "No triplets have measured viability and both matched controls."))
     ggplot(rows, aes(BlissExpectedInhibition, ObservedInhibition, colour = Drug3)) +
       geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey45") +
